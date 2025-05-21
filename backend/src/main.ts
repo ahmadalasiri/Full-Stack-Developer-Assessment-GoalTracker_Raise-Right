@@ -16,6 +16,8 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('goals')
     .addBearerAuth()
+    .setBasePath('api')
+    .addServer(`http://localhost:${configService.get('PORT') || 3001}/api`)
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
