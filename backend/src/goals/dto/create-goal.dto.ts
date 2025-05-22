@@ -28,8 +28,4 @@ export class CreateGoalDto {
   @IsOptional()
   @IsUUID()
   parentId?: string;
-
-  @IsOptional()
-  @IsNumber()
-  order?: number;
 }

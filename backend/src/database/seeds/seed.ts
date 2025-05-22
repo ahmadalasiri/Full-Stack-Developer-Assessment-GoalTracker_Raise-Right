@@ -28,7 +28,6 @@ async function bootstrap() {
         description: 'Finish the Raise Right full stack developer assessment',
         deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
         isPublic: true,
-        order: 0,
       },
       testUser.id,
     );
@@ -41,7 +40,6 @@ async function bootstrap() {
         deadline: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(), // 12 hours from now
         isPublic: false,
         parentId: rootGoal.id,
-        order: 0,
       },
       testUser.id,
     );
@@ -54,7 +52,6 @@ async function bootstrap() {
         deadline: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(), // 18 hours from now
         isPublic: true,
         parentId: rootGoal.id,
-        order: 1,
       },
       testUser.id,
     );
@@ -67,7 +64,6 @@ async function bootstrap() {
         deadline: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(), // 6 hours from now
         isPublic: false,
         parentId: childGoal1.id,
-        order: 0,
       },
       testUser.id,
     );

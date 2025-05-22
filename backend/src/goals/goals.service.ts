@@ -27,6 +27,21 @@ export class GoalsService {
       await this.validateParentGoal(parentId, userId);
     }
 
+    // Find the maximum order value for goals with the same parent
+    const queryBuilder = this.goalsRepository
+      .createQueryBuilder('goal')
+      .select('MAX(goal.order)', 'maxOrder')
+      .where('goal.ownerId = :userId', { userId });
+
+    if (parentId) {
+      queryBuilder.andWhere('goal.parentId = :parentId', { parentId });
+    } else {
+      queryBuilder.andWhere('goal.parentId IS NULL');
+    }
+
+    const { maxOrder } = await queryBuilder.getRawOne();
+    const newOrder = maxOrder !== null ? maxOrder + 1 : 0;
+
     // Generate a public ID if the goal is public
     const publicId = createGoalDto.isPublic ? uuidv4() : undefined;
 
@@ -35,6 +50,7 @@ export class GoalsService {
       ...createGoalDto,
       ownerId: userId,
       publicId,
+      order: newOrder,
     } as unknown as Goal);
 
     // Save and return the goal

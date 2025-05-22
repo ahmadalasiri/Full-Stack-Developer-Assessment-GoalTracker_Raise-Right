@@ -10,8 +10,6 @@ import {
   HttpCode,
   HttpStatus,
   Query,
-  DefaultValuePipe,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { GoalsService } from './goals.service';
