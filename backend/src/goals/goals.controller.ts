@@ -13,6 +13,7 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
 } from '@nestjs/common';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { GoalsService } from './goals.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
@@ -25,6 +26,7 @@ import {
   ApiOperation,
   ApiResponse as SwaggerResponse,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 
 @ApiTags('goals')
@@ -48,15 +50,23 @@ export class GoalsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all root-level user goals with pagination' })
-  async findAll(
-    @CurrentUser() user,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ) {
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number (starts from 1)',
+    type: Number,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Items per page (maximum 100)',
+    type: Number,
+    required: false,
+  })
+  async findAll(@CurrentUser() user, @Query() paginationDto: PaginationDto) {
     const paginatedResult = await this.goalsService.findAll(
       user.id,
-      page,
-      limit,
+      paginationDto.page,
+      paginationDto.limit,
     );
     return ApiResponse.success(paginatedResult);
   }
@@ -93,13 +103,22 @@ export class GoalsController {
   }
   @Get('public/all')
   @ApiOperation({ summary: 'Get all public goals with pagination' })
-  async findPublicGoals(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ) {
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number (starts from 1)',
+    type: Number,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Items per page (maximum 100)',
+    type: Number,
+    required: false,
+  })
+  async findPublicGoals(@Query() paginationDto: PaginationDto) {
     const paginatedResult = await this.goalsService.findPublicGoals(
-      page,
-      limit,
+      paginationDto.page,
+      paginationDto.limit,
     );
     return ApiResponse.success(paginatedResult);
   }
@@ -115,17 +134,28 @@ export class GoalsController {
   @ApiOperation({
     summary: 'Get all children goals of a specific goal with pagination',
   })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number (starts from 1)',
+    type: Number,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Items per page (maximum 100)',
+    type: Number,
+    required: false,
+  })
   async findChildren(
     @Param('id') id: string,
     @CurrentUser() user,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query() paginationDto: PaginationDto,
   ) {
     const paginatedResult = await this.goalsService.findChildren(
       id,
       user.id,
-      page,
-      limit,
+      paginationDto.page,
+      paginationDto.limit,
     );
     return ApiResponse.success(paginatedResult);
   }
