@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsDateString,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -29,6 +30,6 @@ export class CreateGoalDto {
   parentId?: string;
 
   @IsOptional()
-  @IsString()
+  @IsNumber()
   order?: number;
 }
