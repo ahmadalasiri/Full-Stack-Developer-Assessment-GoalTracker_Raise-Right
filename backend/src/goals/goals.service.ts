@@ -119,7 +119,7 @@ export class GoalsService {
   ): Promise<void> {
     const parent = await this.goalsRepository.findOne({
       where: { id: parentId, ownerId: userId },
-      relations: ['parent'],
+      relations: ['parent', 'parent.parent'],
     });
 
     if (!parent) {
@@ -128,10 +128,11 @@ export class GoalsService {
       );
     }
 
-    // Check if the parent already has a parent (to enforce max 2 level nesting)
-    if (parent.parent) {
+    // Check if the parent already has a grandparent (to enforce max 3 level nesting)
+    // This allows for root > child > sub-child structure
+    if (parent.parent && parent.parent.parent) {
       throw new BadRequestException(
-        'Maximum nesting depth reached. Goals can only be nested 2 levels deep.',
+        'Maximum nesting depth reached. Goals can only be nested 3 levels deep (root > child > sub-child).',
       );
     }
   }
