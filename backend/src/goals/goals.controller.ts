@@ -65,19 +65,6 @@ export class GoalsController {
     await this.goalsService.remove(id, user.id);
     return ApiResponse.success(null, 'Goal deleted successfully');
   }
-  @Get('public/all')
-  async findPublicGoals(@Query() paginationDto: PaginationDto) {
-    const paginatedResult = await this.goalsService.findPublicGoals(
-      paginationDto.page,
-      paginationDto.limit,
-    );
-    return ApiResponse.success(paginatedResult);
-  }
-  @Get('public/:publicId')
-  async findPublicGoal(@Param('publicId') publicId: string) {
-    const goal = await this.goalsService.findPublicGoalByPublicId(publicId);
-    return ApiResponse.success(goal);
-  }
   @Get(':id/children')
   @UseGuards(JwtAuthGuard)
   async findChildren(

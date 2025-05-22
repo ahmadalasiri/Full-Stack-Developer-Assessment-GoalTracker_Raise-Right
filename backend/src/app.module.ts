@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { GoalsModule } from './goals/goals.module';
+import { PublicGoalsModule } from './public-goals/public-goals.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { GoalsModule } from './goals/goals.module';
     UsersModule,
     AuthModule,
     GoalsModule,
+    PublicGoalsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

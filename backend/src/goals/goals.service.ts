@@ -126,38 +126,6 @@ export class GoalsService {
     const goal = await this.findOne(id, userId);
     await this.goalsRepository.remove(goal);
   }
-  async findPublicGoals(
-    page: number = 1,
-    limit: number = 10,
-  ): Promise<PaginationResponse<Goal>> {
-    const [goals, total] = await this.goalsRepository.findAndCount({
-      where: { isPublic: true },
-      order: { createdAt: 'DESC' },
-      take: limit,
-      skip: (page - 1) * limit,
-    });
-
-    // Generate enhanced pagination metadata
-    const meta = PaginationUtil.createPaginationMeta(page, limit, total);
-
-    return {
-      data: goals,
-      meta,
-    };
-  }
-
-  async findPublicGoalByPublicId(publicId: string): Promise<Goal> {
-    const goal = await this.goalsRepository.findOne({
-      where: { publicId, isPublic: true },
-      relations: ['parent'],
-    });
-
-    if (!goal) {
-      throw new NotFoundException(`Public goal not found`);
-    }
-
-    return goal;
-  }
   private async validateParentGoal(
     parentId: string,
     userId: string,
