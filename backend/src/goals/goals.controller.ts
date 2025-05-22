@@ -9,6 +9,9 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { GoalsService } from './goals.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
@@ -41,16 +44,22 @@ export class GoalsController {
     const goal = await this.goalsService.create(createGoalDto, user.id);
     return ApiResponse.success(goal, 'Goal created successfully');
   }
-
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all user goals' })
-  async findAll(@CurrentUser() user) {
-    const goals = await this.goalsService.findAll(user.id);
-    return ApiResponse.success(goals);
+  @ApiOperation({ summary: 'Get all root-level user goals with pagination' })
+  async findAll(
+    @CurrentUser() user,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const paginatedResult = await this.goalsService.findAll(
+      user.id,
+      page,
+      limit,
+    );
+    return ApiResponse.success(paginatedResult);
   }
-
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -82,12 +91,17 @@ export class GoalsController {
     await this.goalsService.remove(id, user.id);
     return ApiResponse.success(null, 'Goal deleted successfully');
   }
-
   @Get('public/all')
-  @ApiOperation({ summary: 'Get all public goals' })
-  async findPublicGoals() {
-    const goals = await this.goalsService.findPublicGoals();
-    return ApiResponse.success(goals);
+  @ApiOperation({ summary: 'Get all public goals with pagination' })
+  async findPublicGoals(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const paginatedResult = await this.goalsService.findPublicGoals(
+      page,
+      limit,
+    );
+    return ApiResponse.success(paginatedResult);
   }
   @Get('public/:publicId')
   @ApiOperation({ summary: 'Get a specific public goal by its publicId' })
@@ -95,14 +109,25 @@ export class GoalsController {
     const goal = await this.goalsService.findPublicGoalByPublicId(publicId);
     return ApiResponse.success(goal);
   }
-
   @Get(':id/children')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all children goals of a specific goal' })
-  async findChildren(@Param('id') id: string, @CurrentUser() user) {
-    const children = await this.goalsService.findChildren(id, user.id);
-    return ApiResponse.success(children);
+  @ApiOperation({
+    summary: 'Get all children goals of a specific goal with pagination',
+  })
+  async findChildren(
+    @Param('id') id: string,
+    @CurrentUser() user,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    const paginatedResult = await this.goalsService.findChildren(
+      id,
+      user.id,
+      page,
+      limit,
+    );
+    return ApiResponse.success(paginatedResult);
   }
   @Put(':id/reorder')
   @UseGuards(JwtAuthGuard)
@@ -119,14 +144,5 @@ export class GoalsController {
       user.id,
     );
     return ApiResponse.success(goal, 'Goal reordered successfully');
-  }
-
-  @Get('statistics')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Get statistics about user's goals" })
-  async getStatistics(@CurrentUser() user) {
-    const stats = await this.goalsService.getStatistics(user.id);
-    return ApiResponse.success(stats);
   }
 }

@@ -5,11 +5,13 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { Goal } from './goal.entity';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
+import { PaginationResponse } from '../common/interfaces/pagination.interface';
+import { PaginationUtil } from '../common/utils/pagination.util';
 
 @Injectable()
 export class GoalsService {
@@ -38,12 +40,29 @@ export class GoalsService {
     // Save and return the goal
     return this.goalsRepository.save(goal);
   }
-
-  async findAll(userId: string): Promise<Goal[]> {
-    return this.goalsRepository.find({
-      where: { ownerId: userId },
+  async findAll(
+    userId: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<PaginationResponse<Goal>> {
+    // Get only root goals
+    const [goals, total] = await this.goalsRepository.findAndCount({
+      where: {
+        ownerId: userId,
+        parentId: IsNull(),
+      },
       order: { order: 'ASC' },
+      take: limit,
+      skip: (page - 1) * limit,
     });
+
+    // Generate enhanced pagination metadata
+    const meta = PaginationUtil.createPaginationMeta(page, limit, total);
+
+    return {
+      data: goals,
+      meta,
+    };
   }
 
   async findOne(id: string, userId: string): Promise<Goal> {
@@ -57,7 +76,6 @@ export class GoalsService {
 
     return goal;
   }
-
   async update(
     id: string,
     updateGoalDto: UpdateGoalDto,
@@ -88,17 +106,28 @@ export class GoalsService {
 
     return this.goalsRepository.save(goal);
   }
-
   async remove(id: string, userId: string): Promise<void> {
     const goal = await this.findOne(id, userId);
     await this.goalsRepository.remove(goal);
   }
-
-  async findPublicGoals(): Promise<Goal[]> {
-    return this.goalsRepository.find({
+  async findPublicGoals(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<PaginationResponse<Goal>> {
+    const [goals, total] = await this.goalsRepository.findAndCount({
       where: { isPublic: true },
       order: { createdAt: 'DESC' },
+      take: limit,
+      skip: (page - 1) * limit,
     });
+
+    // Generate enhanced pagination metadata
+    const meta = PaginationUtil.createPaginationMeta(page, limit, total);
+
+    return {
+      data: goals,
+      meta,
+    };
   }
 
   async findPublicGoalByPublicId(publicId: string): Promise<Goal> {
@@ -135,24 +164,36 @@ export class GoalsService {
         'Maximum nesting depth reached. Goals can only be nested 3 levels deep (root > child > sub-child).',
       );
     }
-  }
-
-  /**
-   * Find all child goals of a parent goal
+  } /**
+   * Find all child goals of a parent goal with pagination
    */
-  async findChildren(parentId: string, userId: string): Promise<Goal[]> {
+  async findChildren(
+    parentId: string,
+    userId: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<PaginationResponse<Goal>> {
     const parent = await this.findOne(parentId, userId);
 
-    return this.goalsRepository.find({
+    const [children, total] = await this.goalsRepository.findAndCount({
       where: { parentId: parent.id, ownerId: userId },
       order: { order: 'ASC' },
+      take: limit,
+      skip: (page - 1) * limit,
     });
+
+    // Generate enhanced pagination metadata
+    const meta = PaginationUtil.createPaginationMeta(page, limit, total);
+
+    return {
+      data: children,
+      meta,
+    };
   }
 
   /**
    * Reorder goals by updating their order property
-   */
-  async reorderGoals(
+   */ async reorderGoals(
     goalId: string,
     newOrder: number,
     userId: string,
@@ -164,45 +205,5 @@ export class GoalsService {
 
     // Save and return the updated goal
     return this.goalsRepository.save(goal);
-  }
-
-  /**
-   * Get user's goal statistics
-   */ async getStatistics(userId: string): Promise<{
-    totalGoals: number;
-    totalPublicGoals: number;
-    totalPrivateGoals: number;
-    rootGoals: number;
-    childGoals: number;
-  }> {
-    const totalGoals = await this.goalsRepository.count({
-      where: { ownerId: userId },
-    });
-
-    const totalPublicGoals = await this.goalsRepository.count({
-      where: { ownerId: userId, isPublic: true },
-    });
-
-    // Find goals with no parent (root goals)
-    const rootGoals = await this.goalsRepository
-      .createQueryBuilder('goal')
-      .where('goal.ownerId = :userId', { userId })
-      .andWhere('goal.parentId IS NULL')
-      .getCount();
-
-    // Find goals with a parent (child goals)
-    const childGoals = await this.goalsRepository
-      .createQueryBuilder('goal')
-      .where('goal.ownerId = :userId', { userId })
-      .andWhere('goal.parentId IS NOT NULL')
-      .getCount();
-
-    return {
-      totalGoals,
-      totalPublicGoals,
-      totalPrivateGoals: totalGoals - totalPublicGoals,
-      rootGoals,
-      childGoals,
-    };
   }
 }
