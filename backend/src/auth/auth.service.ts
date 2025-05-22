@@ -15,10 +15,16 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const user = await this.usersService.create(registerDto);
 
-    // Remove password from the response
-    const { password, ...result } = user;
+    const payload = { sub: user.id, email: user.email };
 
-    return result;
+    return {
+      token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      },
+    };
   }
 
   async login(loginDto: LoginDto) {
@@ -36,7 +42,7 @@ export class AuthService {
       const payload = { sub: user.id, email: user.email };
 
       return {
-        access_token: this.jwtService.sign(payload),
+        token: this.jwtService.sign(payload),
         user: {
           id: user.id,
           email: user.email,
