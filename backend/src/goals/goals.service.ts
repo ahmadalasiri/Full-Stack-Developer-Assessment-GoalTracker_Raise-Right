@@ -164,20 +164,79 @@ export class GoalsService {
       meta,
     };
   }
-
   /**
    * Reorder goals by updating their order property
-   */ async reorderGoals(
+   * This implementation correctly handles shifting other goals to maintain order integrity
+   */
+  async reorderGoals(
     goalId: string,
     newOrder: number,
     userId: string,
   ): Promise<Goal> {
+    // Find the goal to reorder
     const goal = await this.findOne(goalId, userId);
+    const oldOrder = goal.order;
 
-    // Update the order of the goal
-    goal.order = newOrder;
+    if (oldOrder === newOrder) {
+      return goal;
+    }
 
-    // Save and return the updated goal
-    return this.goalsRepository.save(goal);
+    // Get the parent ID (or null for root goals)
+    const parentId = goal.parentId;
+
+    // Start a transaction to ensure all updates are atomic
+    const queryRunner =
+      this.goalsRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Update orders of other goals in the same level
+      if (oldOrder < newOrder) {
+        // Moving down: shift goals between old and new position up by 1
+        await queryRunner.manager
+          .createQueryBuilder()
+          .update(Goal)
+          .set({ order: () => '"order" - 1' })
+          .where('ownerId = :userId', { userId })
+          .andWhere(
+            parentId ? 'parentId = :parentId' : 'parentId IS NULL',
+            parentId ? { parentId } : {},
+          )
+          .andWhere('"order" > :oldOrder', { oldOrder })
+          .andWhere('"order" <= :newOrder', { newOrder })
+          .execute();
+      } else {
+        // Moving up: shift goals between new and old position down by 1
+        await queryRunner.manager
+          .createQueryBuilder()
+          .update(Goal)
+          .set({ order: () => '"order" + 1' })
+          .where('ownerId = :userId', { userId })
+          .andWhere(
+            parentId ? 'parentId = :parentId' : 'parentId IS NULL',
+            parentId ? { parentId } : {},
+          )
+          .andWhere('"order" >= :newOrder', { newOrder })
+          .andWhere('"order" < :oldOrder', { oldOrder })
+          .execute();
+      }
+
+      // Update the target goal's order
+      goal.order = newOrder;
+      await queryRunner.manager.save(goal);
+
+      // Commit the transaction
+      await queryRunner.commitTransaction();
+
+      return goal;
+    } catch (error) {
+      // Rollback in case of error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Release the query runner
+      await queryRunner.release();
+    }
   }
 }
