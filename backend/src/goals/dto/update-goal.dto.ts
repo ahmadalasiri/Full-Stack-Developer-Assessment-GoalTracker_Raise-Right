@@ -22,12 +22,4 @@ export class UpdateGoalDto {
   @IsOptional()
   @IsBoolean()
   isPublic?: boolean;
-
-  @IsOptional()
-  @IsUUID()
-  parentId?: string;
-
-  @IsOptional()
-  @IsString()
-  order?: number;
 }

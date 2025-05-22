@@ -99,16 +99,6 @@ export class GoalsService {
   ): Promise<Goal> {
     const goal = await this.findOne(id, userId);
 
-    // If updating parent, validate it
-    if (updateGoalDto.parentId) {
-      await this.validateParentGoal(updateGoalDto.parentId, userId);
-
-      // Prevent circular references
-      if (updateGoalDto.parentId === id) {
-        throw new BadRequestException('Goal cannot be its own parent');
-      }
-    }
-
     // If updating public status, generate or clear publicId
     if (typeof updateGoalDto.isPublic !== 'undefined') {
       if (updateGoalDto.isPublic && !goal.publicId) {
