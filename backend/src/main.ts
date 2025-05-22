@@ -3,25 +3,12 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as morgan from 'morgan';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // Set up Swagger
-  const config = new DocumentBuilder()
-    .setTitle('GoalTracker API')
-    .setDescription('The GoalTracker API documentation')
-    .setVersion('1.0')
-    .addTag('goals')
-    .addBearerAuth()
-    .setBasePath('api')
-    .addServer(`http://localhost:${configService.get('PORT') || 3001}/api`)
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
   // Enable CORS for all origins
   app.enableCors();
 

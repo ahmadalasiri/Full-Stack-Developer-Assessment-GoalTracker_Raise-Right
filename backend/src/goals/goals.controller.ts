@@ -21,47 +21,19 @@ import { ReorderGoalDto } from './dto/reorder-goal.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponse } from '../common/responses/api-response';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse as SwaggerResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
 
-@ApiTags('goals')
 @Controller('goals')
 export class GoalsController {
   constructor(private readonly goalsService: GoalsService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new goal' })
-  @SwaggerResponse({
-    status: 201,
-    description: 'The goal has been successfully created.',
-  })
   async create(@Body() createGoalDto: CreateGoalDto, @CurrentUser() user) {
     const goal = await this.goalsService.create(createGoalDto, user.id);
     return ApiResponse.success(goal, 'Goal created successfully');
   }
   @Get()
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all root-level user goals with pagination' })
-  @ApiQuery({
-    name: 'page',
-    description: 'Page number (starts from 1)',
-    type: Number,
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
-    description: 'Items per page (maximum 100)',
-    type: Number,
-    required: false,
-  })
   async findAll(@CurrentUser() user, @Query() paginationDto: PaginationDto) {
     const paginatedResult = await this.goalsService.findAll(
       user.id,
@@ -72,8 +44,6 @@ export class GoalsController {
   }
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get a specific goal by ID' })
   async findOne(@Param('id') id: string, @CurrentUser() user) {
     const goal = await this.goalsService.findOne(id, user.id);
     return ApiResponse.success(goal);
@@ -81,8 +51,6 @@ export class GoalsController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update a specific goal' })
   async update(
     @Param('id') id: string,
     @Body() updateGoalDto: UpdateGoalDto,
@@ -94,27 +62,12 @@ export class GoalsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete a specific goal' })
   async remove(@Param('id') id: string, @CurrentUser() user) {
     await this.goalsService.remove(id, user.id);
     return ApiResponse.success(null, 'Goal deleted successfully');
   }
   @Get('public/all')
-  @ApiOperation({ summary: 'Get all public goals with pagination' })
-  @ApiQuery({
-    name: 'page',
-    description: 'Page number (starts from 1)',
-    type: Number,
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
-    description: 'Items per page (maximum 100)',
-    type: Number,
-    required: false,
-  })
   async findPublicGoals(@Query() paginationDto: PaginationDto) {
     const paginatedResult = await this.goalsService.findPublicGoals(
       paginationDto.page,
@@ -123,29 +76,12 @@ export class GoalsController {
     return ApiResponse.success(paginatedResult);
   }
   @Get('public/:publicId')
-  @ApiOperation({ summary: 'Get a specific public goal by its publicId' })
   async findPublicGoal(@Param('publicId') publicId: string) {
     const goal = await this.goalsService.findPublicGoalByPublicId(publicId);
     return ApiResponse.success(goal);
   }
   @Get(':id/children')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Get all children goals of a specific goal with pagination',
-  })
-  @ApiQuery({
-    name: 'page',
-    description: 'Page number (starts from 1)',
-    type: Number,
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
-    description: 'Items per page (maximum 100)',
-    type: Number,
-    required: false,
-  })
   async findChildren(
     @Param('id') id: string,
     @CurrentUser() user,
@@ -161,8 +97,6 @@ export class GoalsController {
   }
   @Put(':id/reorder')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Reorder a goal by updating its order property' })
   async reorderGoal(
     @Param('id') id: string,
     @Body() reorderGoalDto: ReorderGoalDto,
