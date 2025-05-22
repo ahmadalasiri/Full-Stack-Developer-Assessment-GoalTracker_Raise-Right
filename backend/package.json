@@ -4,8 +4,7 @@
   "description": "",
   "author": "",
   "private": true,
-  "license": "UNLICENSED",
-  "scripts": {
+  "license": "UNLICENSED",  "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -23,6 +22,7 @@
     "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert",
     "db:seed": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts",
+    "db:test-data": "ts-node -r tsconfig-paths/register src/database/seeds/load-test-data.ts",
     "dev": "npm run db:start && npm run start:dev"
   },
   "dependencies": {
