@@ -26,6 +26,9 @@ export class Goal {
   @Column({ default: false })
   isPublic: boolean;
 
+  @Column({ default: false })
+  completed: boolean;
+
   @Column({ nullable: true })
   parentId: string;
 

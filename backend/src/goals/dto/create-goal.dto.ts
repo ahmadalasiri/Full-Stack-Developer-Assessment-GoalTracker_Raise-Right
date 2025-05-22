@@ -20,7 +20,6 @@ export class CreateGoalDto {
   @IsNotEmpty()
   @IsDateString()
   deadline: string;
-
   @IsOptional()
   @IsBoolean()
   isPublic?: boolean;
@@ -28,4 +27,8 @@ export class CreateGoalDto {
   @IsOptional()
   @IsUUID()
   parentId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  completed?: boolean;
 }

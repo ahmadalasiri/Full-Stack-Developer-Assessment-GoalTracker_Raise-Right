@@ -18,8 +18,11 @@ export class UpdateGoalDto {
   @IsOptional()
   @IsDateString()
   deadline?: string;
-
   @IsOptional()
   @IsBoolean()
   isPublic?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  completed?: boolean;
 }
