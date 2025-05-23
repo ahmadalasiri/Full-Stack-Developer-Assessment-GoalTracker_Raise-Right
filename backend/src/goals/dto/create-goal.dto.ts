@@ -25,7 +25,7 @@ export class CreateGoalDto {
   isPublic?: boolean;
 
   @IsOptional()
-  @IsUUID()
+  @IsString()
   parentId?: string;
 
   @IsOptional()

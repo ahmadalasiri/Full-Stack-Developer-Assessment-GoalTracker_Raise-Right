@@ -167,6 +167,15 @@ export class DashboardComponent implements OnInit {
     this.showGoalModal = true;
   }
 
+  createChildGoal(parentId: string): void {
+    // Create a new goal form with the parent ID pre-filled
+    this.isEditMode = false;
+    this.selectedGoal = null;
+    this.goalForm = this.createGoalForm();
+    this.goalForm.patchValue({ parentId: parentId });
+    this.showGoalModal = true;
+  }
+
   closeGoalModal(): void {
     this.selectedGoal = null;
     this.isEditMode = false;
@@ -393,24 +402,27 @@ export class DashboardComponent implements OnInit {
       }
     }
 
-    // Filter out goals that already have children (to prevent 4th level)
-    // Allow root goals and child goals (but not sub-child goals) to be parents
+    // Filter to allow only root goals and child goals as parents
+    // Root goals: goals with no parentId
+    // Child goals: goals with parentId but whose parent has no parentId
     return allGoals.filter((goal) => {
-      // Check if this goal has any children
-      const hasChildren =
-        this.childrenGoals[goal.id] && this.childrenGoals[goal.id].length > 0;
-
       // If it's a root goal (no parent), allow it
       if (!goal.parentId) {
         return true;
       }
 
-      // If it's a child goal (has parent but no children), allow it
-      if (goal.parentId && !hasChildren) {
-        return true;
+      // If it's a child goal, check if its parent is a root goal
+      if (goal.parentId) {
+        // Find the parent goal
+        const parent = allGoals.find((g) => g.id === goal.parentId);
+
+        // Allow if parent exists and parent is a root goal (no grandparent)
+        if (parent && !parent.parentId) {
+          return true;
+        }
       }
 
-      // Don't allow sub-child goals or goals with children to be parents
+      // Don't allow sub-child goals (goals whose parent has a parent)
       return false;
     });
   }
