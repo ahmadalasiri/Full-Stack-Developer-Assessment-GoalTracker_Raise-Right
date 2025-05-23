@@ -31,19 +31,31 @@ export class LoginComponent {
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
-
   onSubmit(): void {
     if (this.loginForm.valid && !this.loading) {
       this.loading = true;
       this.error = '';
-
       this.authService.login(this.loginForm.value).subscribe({
-        next: () => {
-          this.router.navigate(['/dashboard']);
+        next: (response) => {
+          console.log('Login successful:', response);
+          // Ensure we have the token and user data
+          if (response?.token) {
+            console.log('Navigating to dashboard...');
+            // Navigate to dashboard after login
+            this.router.navigate(['/dashboard']);
+          } else {
+            console.error('Missing token in response');
+            this.error = 'Authentication failed - missing token';
+            this.loading = false;
+          }
         },
         error: (error) => {
+          console.error('Login error:', error);
           this.error = error.error?.message || 'Login failed';
           this.loading = false;
+        },
+        complete: () => {
+          console.log('Login request complete');
         },
       });
     }
