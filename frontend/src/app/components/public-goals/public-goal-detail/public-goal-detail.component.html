@@ -97,17 +97,6 @@
                                     <div class="flex-1">
                                         <!-- Clickable title -->
                                         <div class="flex items-start gap-3">
-                                            <button *ngIf="childGoal.publicId"
-                                                (click)="toggleChildGoalExpansion(childGoal)"
-                                                class="mt-1 text-gray-400 hover:text-gray-600 transition-colors"
-                                                [attr.aria-label]="isChildGoalExpanded(childGoal) ? 'Collapse sub-goals' : 'Expand sub-goals'">
-                                                <svg class="w-4 h-4 transform transition-transform"
-                                                    [class.rotate-90]="isChildGoalExpanded(childGoal)" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                </svg>
-                                            </button>
 
                                             <div class="flex-1">
                                                 <h3 class="font-medium text-gray-900 mb-2 cursor-pointer hover:text-blue-600 transition-colors"

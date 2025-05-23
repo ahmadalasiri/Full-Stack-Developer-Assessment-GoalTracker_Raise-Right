@@ -226,20 +226,6 @@ export class PublicGoalDetailComponent implements OnInit {
     }
   }
 
-  toggleChildGoalExpansion(childGoal: Goal): void {
-    if (!childGoal.publicId) return;
-
-    if (this.expandedChildGoals.has(childGoal.publicId)) {
-      this.expandedChildGoals.delete(childGoal.publicId);
-    } else {
-      this.expandedChildGoals.add(childGoal.publicId);
-      // Load sub-children if not already loaded
-      if (!this.childGoalSubGoals.has(childGoal.publicId)) {
-        this.loadChildGoalSubChildren(childGoal);
-      }
-    }
-  }
-
   isChildGoalExpanded(childGoal: Goal): boolean {
     return childGoal.publicId
       ? this.expandedChildGoals.has(childGoal.publicId)

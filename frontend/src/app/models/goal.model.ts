@@ -12,6 +12,20 @@ export interface Goal {
   children?: Goal[];
 }
 
+// public goals exposed to the Goal
+export interface PublicGoal {
+  id: string;
+  title: string;
+  description: string;
+  deadline: string; // ISO Date
+  isPublic: true;
+  parentId?: string | null;
+  order: number; // For custom ordering
+  publicId: string; // Public read-only share link
+  ownerId: string;
+  completed?: boolean;
+  children?: Goal[];
+}
 export interface CreateGoalDto {
   title: string;
   description: string;
