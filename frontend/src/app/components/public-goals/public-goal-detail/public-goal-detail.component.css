@@ -1,0 +1,104 @@
+/* Custom styles for public goal detail component */
+
+.goal-card {
+    transition: all 0.3s ease;
+}
+
+.goal-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    transition: width 0.5s ease-in-out;
+}
+
+.status-badge {
+    transition: all 0.2s ease;
+}
+
+.child-goal-item {
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.child-goal-item:hover {
+    border-left-color: #3b82f6;
+    background-color: #f8fafc;
+}
+
+.expand-button {
+    transition: all 0.2s ease;
+}
+
+.expand-button:hover {
+    transform: scale(1.05);
+}
+
+/* Loading animation */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .goal-meta-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .goal-header {
+        padding: 1.5rem;
+    }
+
+    .child-goals-section {
+        padding: 1rem;
+    }
+}
+
+/* Custom scrollbar for child goals */
+.child-goals-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.child-goals-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.child-goals-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.child-goals-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Status indicator animations */
+.status-completed {
+    animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

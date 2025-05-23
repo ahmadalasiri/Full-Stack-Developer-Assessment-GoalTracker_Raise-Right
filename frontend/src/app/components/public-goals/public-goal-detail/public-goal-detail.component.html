@@ -1,0 +1,154 @@
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Error</h3>
+                    <div class="mt-2 text-sm text-red-700">{{ error }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goal Content -->
+        <div *ngIf="goal && !loading">
+            <!-- Navigation -->
+            <div class="mb-6">
+                <button (click)="navigateToPublic()"
+                    class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                        </path>
+                    </svg>
+                    Back to Public Goals
+                </button>
+            </div>
+
+            <!-- Goal Header -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+                <div class="px-6 py-8">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ goal.title }}</h1>
+                            <p class="text-lg text-gray-600 mb-6" *ngIf="goal.description">{{ goal.description }}</p>
+
+                            <!-- Goal Meta Information -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <div class="text-sm font-medium text-gray-500">Status</div>
+                                    <div class="mt-1">
+                                        <span [ngClass]="{
+                                            'bg-green-100 text-green-800': goal.completed,
+                                            'bg-red-100 text-red-800': isOverdue(goal) && !goal.completed,
+                                            'bg-yellow-100 text-yellow-800': isDeadlineWarning(goal) && !goal.completed && !isOverdue(goal),
+                                            'bg-blue-100 text-blue-800': !goal.completed && !isOverdue(goal) && !isDeadlineWarning(goal)
+                                        }"
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                            {{ getStatusText(goal) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-lg p-4" *ngIf="goal.deadline">
+                                    <div class="text-sm font-medium text-gray-500">Deadline</div>
+                                    <div class="mt-1 text-sm text-gray-900">{{ formatDate(goal.deadline) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Child Goals Section -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-semibold text-gray-900">Sub-Goals</h2>
+                        <button (click)="toggleChildGoals()" class="text-blue-600 hover:text-blue-800 font-medium">
+                            {{ expandChildren ? 'Hide' : 'Show' }} Sub-Goals
+                        </button>
+                    </div>
+                </div>
+
+                <div *ngIf="expandChildren" class="px-6 py-4">
+                    <!-- Loading Child Goals -->
+                    <div *ngIf="loadingChildren" class="flex justify-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+
+                    <!-- Child Goals List -->
+                    <div *ngIf="!loadingChildren && childGoals.length > 0" class="space-y-4">
+                        <div *ngFor="let childGoal of childGoals"
+                            class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h3 class="font-medium text-gray-900 mb-2">{{ childGoal.title }}</h3>
+                                    <p class="text-sm text-gray-600 mb-3" *ngIf="childGoal.description">{{
+                                        childGoal.description }}</p>
+
+                                    <div class="flex items-center space-x-4"> <span [ngClass]="{
+                      'bg-green-100 text-green-800': childGoal.completed,
+                      'bg-red-100 text-red-800': isOverdue(childGoal) && !childGoal.completed,
+                      'bg-yellow-100 text-yellow-800': isDeadlineWarning(childGoal) && !childGoal.completed && !isOverdue(childGoal),
+                      'bg-blue-100 text-blue-800': !childGoal.completed && !isOverdue(childGoal) && !isDeadlineWarning(childGoal)
+                    }" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
+                                            {{ getStatusText(childGoal) }}
+                                        </span>
+
+                                        <span class="text-sm text-gray-500" *ngIf="childGoal.deadline">
+                                            Due: {{ formatDate(childGoal.deadline) }}
+                                        </span>
+                                    </div> <!-- Child Goal Progress -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No Child Goals -->
+                    <div *ngIf="!loadingChildren && childGoals.length === 0" class="text-center py-8">
+                        <div class="text-gray-500">
+                            <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                                </path>
+                            </svg>
+                            <p class="text-sm">No sub-goals for this goal yet.</p>
+                        </div>
+                    </div>
+
+                    <!-- Load More Button -->
+                    <div *ngIf="!allChildrenLoaded && childGoals.length > 0 && !loadingChildren"
+                        class="text-center mt-6">
+                        <button (click)="loadMoreChildren()" [disabled]="loadingMoreChildren"
+                            class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                            <span *ngIf="!loadingMoreChildren">Load More Sub-Goals</span>
+                            <span *ngIf="loadingMoreChildren" class="flex items-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                Loading...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

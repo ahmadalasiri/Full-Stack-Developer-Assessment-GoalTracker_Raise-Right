@@ -1,0 +1,135 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-gray-900">GoalTracker</h1>
+                </div>
+                <div class="flex items-center space-x-4" *ngIf="!isAuthenticated">
+                    <button (click)="navigateToLogin()"
+                        class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        Sign In
+                    </button>
+                    <button (click)="navigateToRegister()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        Sign Up
+                    </button>
+                </div>
+                <div *ngIf="isAuthenticated">
+                    <button (click)="navigateToDashboard()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        Go to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <!-- Hero Section -->
+            <div class="mb-12">
+                <h2 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                    Track Your Goals,
+                    <span class="text-blue-600">Achieve Your Dreams</span>
+                </h2>
+                <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Set meaningful goals, track your progress, and celebrate your achievements.
+                    Join a community of goal-setters and get inspired by others' journeys.
+                </p>
+            </div>
+
+            <!-- Action Cards -->
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <!-- Personal Goals Card -->
+                <div class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow">
+                    <div class="text-blue-600 mb-4">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Personal Goals</h3>
+                    <p class="text-gray-600 mb-6">
+                        Create and manage your personal goals with deadlines, progress tracking, and achievement
+                        milestones.
+                    </p>
+                    <button (click)="navigateToDashboard()"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started' }}
+                    </button>
+                </div>
+
+                <!-- Public Goals Card -->
+                <div class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow">
+                    <div class="text-green-600 mb-4">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Public Goals</h3>
+                    <p class="text-gray-600 mb-6">
+                        Explore and get inspired by goals shared by our community. See what others are working towards
+                        and achieving.
+                    </p>
+                    <button (click)="navigateToPublicGoals()"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        Browse Public Goals
+                    </button>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Why Choose GoalTracker?</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="text-blue-600 mb-2">
+                            <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Easy to Use</h4>
+                        <p class="text-gray-600 text-sm">Simple and intuitive interface to track your progress</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-blue-600 mb-2">
+                            <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Progress Tracking</h4>
+                        <p class="text-gray-600 text-sm">Visual progress indicators and milestone celebrations</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-blue-600 mb-2">
+                            <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-7.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Community</h4>
+                        <p class="text-gray-600 text-sm">Get inspired by others and share your achievements</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="text-center text-gray-600 text-sm">
+                <p>&copy; 2024 GoalTracker. Built with passion for achieving dreams.</p>
+            </div>
+        </div>
+    </footer>
+</div>

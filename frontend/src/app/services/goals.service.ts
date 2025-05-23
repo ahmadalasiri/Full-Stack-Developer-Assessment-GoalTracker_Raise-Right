@@ -32,6 +32,7 @@ export interface GoalResponse {
 })
 export class GoalsService {
   private apiUrl = `${environment.apiUrl}/goals`;
+  private publicApiUrl = `${environment.apiUrl}/public-goals`;
 
   constructor(private http: HttpClient) {}
 
@@ -45,6 +46,7 @@ export class GoalsService {
       })
     );
   }
+
   // Get children of a specific goal
   getGoalChildren(
     parentId: string,
@@ -115,5 +117,53 @@ export class GoalsService {
         return throwError(() => error);
       })
     );
+  }
+
+  // ==== PUBLIC GOALS METHODS ====
+
+  // Get all public goals (root level)
+  getPublicGoals(
+    page: number = 1,
+    limit: number = 100
+  ): Observable<GoalsResponse> {
+    const params = { page: page.toString(), limit: limit.toString() };
+    return this.http.get<GoalsResponse>(this.publicApiUrl, { params }).pipe(
+      catchError((error) => {
+        console.error('Error fetching public goals:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Get a public goal by its public ID
+  getPublicGoal(publicId: string): Observable<GoalResponse> {
+    return this.http.get<GoalResponse>(`${this.publicApiUrl}/${publicId}`).pipe(
+      catchError((error) => {
+        console.error(`Error fetching public goal ${publicId}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Get children of a public goal
+  getPublicGoalChildren(
+    publicId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Observable<GoalsResponse> {
+    const params = { page: page.toString(), limit: limit.toString() };
+    return this.http
+      .get<GoalsResponse>(`${this.publicApiUrl}/${publicId}/children`, {
+        params,
+      })
+      .pipe(
+        catchError((error) => {
+          console.error(
+            `Error fetching children for public goal ${publicId}:`,
+            error
+          );
+          return throwError(() => error);
+        })
+      );
   }
 }
