@@ -29,6 +29,11 @@ export class PublicGoalDetailComponent implements OnInit {
   allChildrenLoaded = false;
   expandChildren = false;
 
+  // Track expanded child goals and their sub-children
+  expandedChildGoals = new Set<string>();
+  childGoalSubGoals = new Map<string, Goal[]>();
+  loadingChildSubGoals = new Set<string>();
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -219,5 +224,64 @@ export class PublicGoalDetailComponent implements OnInit {
     if (childGoal.publicId) {
       this.router.navigate(['/public', childGoal.publicId]);
     }
+  }
+
+  toggleChildGoalExpansion(childGoal: Goal): void {
+    if (!childGoal.publicId) return;
+
+    if (this.expandedChildGoals.has(childGoal.publicId)) {
+      this.expandedChildGoals.delete(childGoal.publicId);
+    } else {
+      this.expandedChildGoals.add(childGoal.publicId);
+      // Load sub-children if not already loaded
+      if (!this.childGoalSubGoals.has(childGoal.publicId)) {
+        this.loadChildGoalSubChildren(childGoal);
+      }
+    }
+  }
+
+  isChildGoalExpanded(childGoal: Goal): boolean {
+    return childGoal.publicId
+      ? this.expandedChildGoals.has(childGoal.publicId)
+      : false;
+  }
+
+  loadChildGoalSubChildren(childGoal: Goal): void {
+    if (!childGoal.publicId) return;
+
+    this.loadingChildSubGoals.add(childGoal.publicId);
+
+    this.goalsService
+      .getPublicGoalChildren(childGoal.publicId, 1, 10)
+      .subscribe({
+        next: (response: GoalsResponse) => {
+          let subGoals: Goal[] = [];
+
+          if (response && response.success === true && response.data) {
+            subGoals = response.data.data || [];
+          } else if (Array.isArray(response)) {
+            subGoals = response;
+          }
+
+          this.childGoalSubGoals.set(childGoal.publicId!, subGoals);
+          this.loadingChildSubGoals.delete(childGoal.publicId!);
+        },
+        error: (error: any) => {
+          console.error('Error loading sub-children for child goal:', error);
+          this.loadingChildSubGoals.delete(childGoal.publicId!);
+        },
+      });
+  }
+
+  getChildGoalSubChildren(childGoal: Goal): Goal[] {
+    return childGoal.publicId
+      ? this.childGoalSubGoals.get(childGoal.publicId) || []
+      : [];
+  }
+
+  isLoadingChildSubGoals(childGoal: Goal): boolean {
+    return childGoal.publicId
+      ? this.loadingChildSubGoals.has(childGoal.publicId)
+      : false;
   }
 }

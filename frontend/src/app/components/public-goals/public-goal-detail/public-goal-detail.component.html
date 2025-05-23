@@ -86,31 +86,133 @@
                     <!-- Loading Child Goals -->
                     <div *ngIf="loadingChildren" class="flex justify-center py-8">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    </div>
-
-                    <!-- Child Goals List -->
+                    </div> <!-- Child Goals List -->
                     <div *ngIf="!loadingChildren && childGoals.length > 0" class="space-y-4">
                         <div *ngFor="let childGoal of childGoals"
-                            class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <h3 class="font-medium text-gray-900 mb-2">{{ childGoal.title }}</h3>
-                                    <p class="text-sm text-gray-600 mb-3" *ngIf="childGoal.description">{{
-                                        childGoal.description }}</p>
+                            class="border border-gray-200 rounded-lg overflow-hidden">
 
-                                    <div class="flex items-center space-x-4"> <span [ngClass]="{
-                      'bg-green-100 text-green-800': childGoal.completed,
-                      'bg-red-100 text-red-800': isOverdue(childGoal) && !childGoal.completed,
-                      'bg-yellow-100 text-yellow-800': isDeadlineWarning(childGoal) && !childGoal.completed && !isOverdue(childGoal),
-                      'bg-blue-100 text-blue-800': !childGoal.completed && !isOverdue(childGoal) && !isDeadlineWarning(childGoal)
-                    }" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
-                                            {{ getStatusText(childGoal) }}
-                                        </span>
+                            <!-- Child Goal Header -->
+                            <div class="p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <!-- Clickable title -->
+                                        <div class="flex items-start gap-3">
+                                            <button *ngIf="childGoal.publicId"
+                                                (click)="toggleChildGoalExpansion(childGoal)"
+                                                class="mt-1 text-gray-400 hover:text-gray-600 transition-colors"
+                                                [attr.aria-label]="isChildGoalExpanded(childGoal) ? 'Collapse sub-goals' : 'Expand sub-goals'">
+                                                <svg class="w-4 h-4 transform transition-transform"
+                                                    [class.rotate-90]="isChildGoalExpanded(childGoal)" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                </svg>
+                                            </button>
 
-                                        <span class="text-sm text-gray-500" *ngIf="childGoal.deadline">
-                                            Due: {{ formatDate(childGoal.deadline) }}
-                                        </span>
-                                    </div> <!-- Child Goal Progress -->
+                                            <div class="flex-1">
+                                                <h3 class="font-medium text-gray-900 mb-2 cursor-pointer hover:text-blue-600 transition-colors"
+                                                    (click)="viewChildGoal(childGoal)">
+                                                    {{ childGoal.title }}
+                                                    <svg class="w-4 h-4 inline ml-1 text-gray-400" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+                                                        </path>
+                                                    </svg>
+                                                </h3>
+
+                                                <p class="text-sm text-gray-600 mb-3" *ngIf="childGoal.description">
+                                                    {{ childGoal.description }}
+                                                </p>
+
+                                                <div class="flex items-center space-x-4">
+                                                    <span [ngClass]="{
+                                                        'bg-green-100 text-green-800': childGoal.completed,
+                                                        'bg-red-100 text-red-800': isOverdue(childGoal) && !childGoal.completed,
+                                                        'bg-yellow-100 text-yellow-800': isDeadlineWarning(childGoal) && !childGoal.completed && !isOverdue(childGoal),
+                                                        'bg-blue-100 text-blue-800': !childGoal.completed && !isOverdue(childGoal) && !isDeadlineWarning(childGoal)
+                                                    }"
+                                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
+                                                        {{ getStatusText(childGoal) }}
+                                                    </span>
+
+                                                    <span class="text-sm text-gray-500" *ngIf="childGoal.deadline">
+                                                        Due: {{ formatDate(childGoal.deadline) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-children Section -->
+                            <div *ngIf="isChildGoalExpanded(childGoal)" class="border-t border-gray-100 bg-gray-50">
+                                <!-- Loading sub-children -->
+                                <div *ngIf="isLoadingChildSubGoals(childGoal)" class="p-4 text-center">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto">
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-2">Loading sub-goals...</p>
+                                </div>
+
+                                <!-- Sub-children list -->
+                                <div *ngIf="!isLoadingChildSubGoals(childGoal) && getChildGoalSubChildren(childGoal).length > 0"
+                                    class="p-4 space-y-3">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-3">Sub-goals:</h4>
+
+                                    <div *ngFor="let subGoal of getChildGoalSubChildren(childGoal)"
+                                        class="bg-white border border-gray-200 rounded-md p-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                                        (click)="viewChildGoal(subGoal)">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1">
+                                                <h5
+                                                    class="font-medium text-gray-800 text-sm hover:text-blue-600 transition-colors">
+                                                    {{ subGoal.title }}
+                                                    <svg class="w-3 h-3 inline ml-1 text-gray-400" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+                                                        </path>
+                                                    </svg>
+                                                </h5>
+
+                                                <p class="text-xs text-gray-600 mt-1 line-clamp-2"
+                                                    *ngIf="subGoal.description">
+                                                    {{ subGoal.description }}
+                                                </p>
+
+                                                <div class="flex items-center space-x-3 mt-2">
+                                                    <span [ngClass]="{
+                                                        'bg-green-100 text-green-800': subGoal.completed,
+                                                        'bg-red-100 text-red-800': isOverdue(subGoal) && !subGoal.completed,
+                                                        'bg-yellow-100 text-yellow-800': isDeadlineWarning(subGoal) && !subGoal.completed && !isOverdue(subGoal),
+                                                        'bg-blue-100 text-blue-800': !subGoal.completed && !isOverdue(subGoal) && !isDeadlineWarning(subGoal)
+                                                    }"
+                                                        class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium">
+                                                        {{ getStatusText(subGoal) }}
+                                                    </span>
+
+                                                    <span class="text-xs text-gray-500" *ngIf="subGoal.deadline">
+                                                        Due: {{ formatDate(subGoal.deadline) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- No sub-children message -->
+                                <div *ngIf="!isLoadingChildSubGoals(childGoal) && getChildGoalSubChildren(childGoal).length === 0"
+                                    class="p-4 text-center text-sm text-gray-500">
+                                    <svg class="mx-auto h-8 w-8 text-gray-300 mb-2" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                                        </path>
+                                    </svg>
+                                    No sub-goals for this goal.
                                 </div>
                             </div>
                         </div>
