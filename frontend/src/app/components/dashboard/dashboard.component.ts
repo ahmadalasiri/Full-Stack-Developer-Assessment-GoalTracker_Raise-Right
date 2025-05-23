@@ -648,22 +648,68 @@ export class DashboardComponent implements OnInit {
   /**
    * Checks if a goal can have child goals
    * Enforces the 2-level nesting requirement
-   */
-  canAddChildGoal(goal: Goal | null): boolean {
+   */ canAddChildGoal(goal: Goal | null): boolean {
     if (!goal) return false;
-    
+
     // A goal can have children if:
     // 1. It's a root goal (no parentId)
     // 2. It's a child (has parentId, but not a sub-child)
-    
+
     // If it has no parent, it's a root goal
     if (!goal.parentId) return true;
-    
-    // Find the goal's parent
-    const parentGoal = this.goals.find(g => g.id === goal.parentId);
-    
+
+    // Find the goal's parent from all available goals
+    // First check in main goals array
+    let parentGoal = this.goals.find((g) => g.id === goal.parentId);
+
+    // If not found in main goals, search in all child goals
+    if (!parentGoal) {
+      for (const parentId in this.childrenGoals) {
+        const foundParent = this.childrenGoals[parentId]?.find(
+          (g) => g.id === goal.parentId
+        );
+        if (foundParent) {
+          parentGoal = foundParent;
+          break;
+        }
+      }
+    }
+
     // If parent has no parent, this is a first-level child, so it can have children
     // Otherwise, it's already a sub-child, so it can't have more children
     return parentGoal ? !parentGoal.parentId : false;
+  }
+
+  /**
+   * Determines the nesting level of a goal:
+   * 0 = root goal
+   * 1 = child goal
+   * 2 = sub-child (grandchild) goal
+   */
+  getGoalNestingLevel(goal: Goal | null): number {
+    if (!goal) return -1;
+    if (!goal.parentId) return 0; // Root goal
+
+    // Find parent goal
+    let parentGoal = this.goals.find((g) => g.id === goal.parentId);
+
+    // If not found in main goals, search in all child goals
+    if (!parentGoal) {
+      for (const parentId in this.childrenGoals) {
+        const foundParent = this.childrenGoals[parentId]?.find(
+          (g) => g.id === goal.parentId
+        );
+        if (foundParent) {
+          parentGoal = foundParent;
+          break;
+        }
+      }
+    }
+
+    // If parent has no parent, this is a first-level child
+    if (parentGoal && !parentGoal.parentId) return 1;
+
+    // Otherwise, it's a sub-child
+    return 2;
   }
 }
