@@ -298,8 +298,18 @@ export class DashboardComponent implements OnInit {
     this.goalForm.patchValue({ parentId: parentId });
     this.showGoalModal = true;
   }
-
   closeGoalModal(): void {
+    // Check if the form is dirty (has unsaved changes)
+    if (this.goalForm.dirty && this.showGoalModal) {
+      // Ask for confirmation before closing to prevent accidental data loss
+      const confirmClose = confirm(
+        'You have unsaved changes. Are you sure you want to close?'
+      );
+      if (!confirmClose) {
+        return; // Keep the modal open if the user cancels
+      }
+    }
+
     this.selectedGoal = null;
     this.isEditMode = false;
     this.goalForm.reset();
