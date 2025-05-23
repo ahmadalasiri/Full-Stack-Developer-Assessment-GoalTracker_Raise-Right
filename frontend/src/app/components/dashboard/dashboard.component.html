@@ -125,8 +125,7 @@
                     <input type="checkbox" [checked]="detailGoal.completed" (change)="toggleCompleted(detailGoal)"
                         class="h-5 w-5 mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <span class="text-gray-700">{{ detailGoal.completed ? 'Completed' : 'Mark as complete' }}</span>
-                </div> <!-- Children section -->
-                <div class="mt-8">
+                </div> <!-- Children section -->                <div class="mt-8">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-semibold">Child Goals</h3>
                         <div class="flex items-center">
@@ -138,8 +137,8 @@
                                 <span class="text-gray-600 text-xs">Loading more...</span>
                             </div>
 
-                            <!-- Add Child Goal button -->
-                            <button (click)="createChildGoal(detailGoal.id)"
+                            <!-- Add Child Goal button - only show for root goals or children (not sub-children) -->
+                            <button *ngIf="canAddChildGoal(detailGoal)" (click)="createChildGoal(detailGoal.id)"
                                 class="bg-blue-100 text-blue-700 px-2 py-1 text-sm rounded hover:bg-blue-200 flex items-center transition-all duration-200">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20"
                                     fill="currentColor">
@@ -150,8 +149,7 @@
                                 Add Child Goal
                             </button>
                         </div>
-                    </div>
-                    <div *ngIf="childrenGoals[detailGoal.id]?.length; else noChildGoals"
+                    </div>                    <div *ngIf="childrenGoals[detailGoal.id]?.length; else noChildGoals"
                         class="border rounded-md divide-y h-[300px] overflow-y-auto" #childGoalsContainer
                         (scroll)="onChildGoalsScroll($event)">
                         <div *ngFor="let child of childrenGoals[detailGoal.id]" class="p-3 hover:bg-gray-50">
@@ -184,7 +182,7 @@
                     </div> <ng-template #noChildGoals>
                         <div class="text-center py-8">
                             <p class="text-gray-500 mb-4">No child goals yet.</p>
-                            <button (click)="createChildGoal(detailGoal.id)"
+                            <button *ngIf="canAddChildGoal(detailGoal)" (click)="createChildGoal(detailGoal.id)"
                                 class="bg-blue-100 text-blue-700 px-4 py-2 rounded hover:bg-blue-200 flex items-center mx-auto">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
                                     fill="currentColor">
@@ -194,6 +192,9 @@
                                 </svg>
                                 Add Child Goal
                             </button>
+                            <p *ngIf="!canAddChildGoal(detailGoal)" class="text-gray-500 text-sm mt-2">
+                                Maximum nesting depth reached. Goals can only be nested 2 levels deep.
+                            </p>
                         </div>
                     </ng-template>
                 </div>

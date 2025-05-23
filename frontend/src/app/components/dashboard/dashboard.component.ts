@@ -644,4 +644,26 @@ export class DashboardComponent implements OnInit {
       return false;
     });
   }
+
+  /**
+   * Checks if a goal can have child goals
+   * Enforces the 2-level nesting requirement
+   */
+  canAddChildGoal(goal: Goal | null): boolean {
+    if (!goal) return false;
+    
+    // A goal can have children if:
+    // 1. It's a root goal (no parentId)
+    // 2. It's a child (has parentId, but not a sub-child)
+    
+    // If it has no parent, it's a root goal
+    if (!goal.parentId) return true;
+    
+    // Find the goal's parent
+    const parentGoal = this.goals.find(g => g.id === goal.parentId);
+    
+    // If parent has no parent, this is a first-level child, so it can have children
+    // Otherwise, it's already a sub-child, so it can't have more children
+    return parentGoal ? !parentGoal.parentId : false;
+  }
 }
