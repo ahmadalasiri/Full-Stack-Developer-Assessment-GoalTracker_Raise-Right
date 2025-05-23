@@ -46,18 +46,7 @@
                                 <span *ngIf="isGoalExpanded(goal.id)">▼</span>
                             </span>
                             <span *ngIf="!childrenGoals[goal.id] || childrenGoals[goal.id].length === 0"
-                                class="mr-2 w-4"></span>
-                            <span class="text-gray-800 flex-1">{{ goal.title }}</span>
-                            <!-- 3-dots menu for creating child -->
-                            <button (click)="$event.stopPropagation(); createChildGoal(goal.id)"
-                                class="opacity-0 group-hover:opacity-100 ml-2 p-1 rounded hover:bg-gray-200 transition-opacity"
-                                title="Create child goal">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500"
-                                    fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                                </svg>
-                            </button>
+                                class="mr-2 w-4"></span> <span class="text-gray-800 flex-1">{{ goal.title }}</span>
                         </div><!-- Child goals -->
                         <ul *ngIf="isGoalExpanded(goal.id) && childrenGoals[goal.id]"
                             class="ml-6 mt-1 space-y-1 border-l border-gray-200 pl-2">
@@ -72,18 +61,8 @@
                                         <span *ngIf="isGoalExpanded(child.id)">▼</span>
                                     </span>
                                     <span *ngIf="!childrenGoals[child.id] || childrenGoals[child.id].length === 0"
-                                        class="mr-2 w-3"></span>
-                                    <span class="text-gray-600 text-sm flex-1">{{ child.title }}</span>
-                                    <!-- 3-dots menu for creating sub-child -->
-                                    <button (click)="$event.stopPropagation(); createChildGoal(child.id)"
-                                        class="opacity-0 group-hover:opacity-100 ml-2 p-1 rounded hover:bg-gray-200 transition-opacity"
-                                        title="Create sub-child goal">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-500"
-                                            fill="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                                        </svg>
-                                    </button>
+                                        class="mr-2 w-3"></span> <span class="text-gray-600 text-sm flex-1">{{
+                                        child.title }}</span>
                                 </div>
                                 <!-- Sub-child goals (grandchildren) -->
                                 <ul *ngIf="isGoalExpanded(child.id) && childrenGoals[child.id]"
@@ -150,11 +129,26 @@
                 <div class="mt-8">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-semibold">Child Goals</h3>
-                        <!-- Loading indicator for infinite scroll of child goals -->
-                        <div *ngIf="loadingMoreChildGoals && detailGoal" class="flex items-center text-sm">
-                            <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500 mr-2">
+                        <div class="flex items-center">
+                            <!-- Loading indicator for infinite scroll of child goals -->
+                            <div *ngIf="loadingMoreChildGoals && detailGoal" class="flex items-center text-sm mr-3">
+                                <div
+                                    class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500 mr-2">
+                                </div>
+                                <span class="text-gray-600 text-xs">Loading more...</span>
                             </div>
-                            <span class="text-gray-600 text-xs">Loading more...</span>
+
+                            <!-- Add Child Goal button -->
+                            <button (click)="createChildGoal(detailGoal.id)"
+                                class="bg-blue-100 text-blue-700 px-2 py-1 text-sm rounded hover:bg-blue-200 flex items-center transition-all duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Add Child Goal
+                            </button>
                         </div>
                     </div>
                     <div *ngIf="childrenGoals[detailGoal.id]?.length; else noChildGoals"
@@ -187,10 +181,20 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <ng-template #noChildGoals>
-                        <p class="text-gray-500 text-sm">No child goals yet. Create one by clicking the "Create New
-                            Goal" button.</p>
+                    </div> <ng-template #noChildGoals>
+                        <div class="text-center py-8">
+                            <p class="text-gray-500 mb-4">No child goals yet.</p>
+                            <button (click)="createChildGoal(detailGoal.id)"
+                                class="bg-blue-100 text-blue-700 px-4 py-2 rounded hover:bg-blue-200 flex items-center mx-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Add Child Goal
+                            </button>
+                        </div>
                     </ng-template>
                 </div>
             </div>
