@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GoalsService } from '../../services/goals.service';
+import {
+  GoalsService,
+  GoalsResponse,
+  GoalResponse,
+} from '../../services/goals.service';
 import { Goal, CreateGoalDto, UpdateGoalDto } from '../../models/goal.model';
 import {
   FormsModule,
@@ -65,7 +69,7 @@ export class DashboardComponent implements OnInit {
   loadGoals(page: number = 1): void {
     this.loading = true;
     this.goalsService.getGoals(page, this.pageSize).subscribe({
-      next: (response) => {
+      next: (response: GoalsResponse) => {
         console.log('API Response:', response);
 
         // Based on the exact API response format from Postman
@@ -94,11 +98,8 @@ export class DashboardComponent implements OnInit {
         } else if (response && Array.isArray(response.data)) {
           // Response format: { data: [...goals] }
           this.goals = response.data;
-          if (response.meta && response.meta.totalItems) {
-            this.totalPages = Math.ceil(
-              response.meta.totalItems / this.pageSize
-            );
-          }
+          // No meta in this case
+          this.totalPages = 1;
         } else {
           console.warn('Unexpected API response format:', response);
           this.goals = [];
@@ -110,10 +111,9 @@ export class DashboardComponent implements OnInit {
         if (!this.detailGoal && this.goals.length > 0) {
           this.selectGoal(this.goals[0]);
         }
-
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading goals:', error);
         this.error = error.message || 'Failed to load goals';
         this.loading = false;
@@ -128,7 +128,7 @@ export class DashboardComponent implements OnInit {
 
     this.loading = true;
     this.goalsService.getGoalChildren(parentId).subscribe({
-      next: (response) => {
+      next: (response: GoalsResponse) => {
         console.log('Child goals response:', response);
         if (response) {
           // Handle various response structures
@@ -153,7 +153,7 @@ export class DashboardComponent implements OnInit {
         }
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error(`Error loading children for goal ${parentId}:`, error);
         this.error = error.message || 'Failed to load child goals';
         this.loading = false;
@@ -200,7 +200,7 @@ export class DashboardComponent implements OnInit {
         this.goalsService
           .updateGoal(this.selectedGoal.id, updateDto)
           .subscribe({
-            next: (response) => {
+            next: (response: GoalResponse) => {
               if (response.success && response.data) {
                 // Update the goal in the list
                 const index = this.goals.findIndex(
@@ -224,7 +224,7 @@ export class DashboardComponent implements OnInit {
               }
               this.loading = false;
             },
-            error: (error) => {
+            error: (error: any) => {
               console.error('Error updating goal:', error);
               this.error = error.message || 'Failed to update goal';
               this.loading = false;
@@ -241,7 +241,7 @@ export class DashboardComponent implements OnInit {
           completed: formValue.completed,
         };
         this.goalsService.createGoal(createDto).subscribe({
-          next: (response) => {
+          next: (response: GoalResponse) => {
             if (response.success && response.data) {
               if (!formValue.parentId) {
                 // Add to the main goals list if it's a root goal
@@ -277,7 +277,7 @@ export class DashboardComponent implements OnInit {
             }
             this.loading = false;
           },
-          error: (error) => {
+          error: (error: any) => {
             console.error('Error creating goal:', error);
             this.error = error.message || 'Failed to create goal';
             this.loading = false;
@@ -290,7 +290,7 @@ export class DashboardComponent implements OnInit {
     if (confirm('Are you sure you want to delete this goal?')) {
       this.loading = true;
       this.goalsService.deleteGoal(id).subscribe({
-        next: (response) => {
+        next: (response: any) => {
           if (response.success || response.status === 204) {
             this.goals = this.goals.filter((goal) => goal.id !== id);
 
@@ -309,7 +309,7 @@ export class DashboardComponent implements OnInit {
           }
           this.loading = false;
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error deleting goal:', error);
           this.error = error.message || 'Failed to delete goal';
           this.loading = false;
@@ -322,9 +322,8 @@ export class DashboardComponent implements OnInit {
     const updateDto: UpdateGoalDto = {
       completed: !goal.completed,
     };
-
     this.goalsService.updateGoal(goal.id, updateDto).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         console.log('Toggle completed response:', response);
         // Check for any valid response and toggle the state regardless of response format
         // as long as there's no error
@@ -337,7 +336,7 @@ export class DashboardComponent implements OnInit {
         }
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error toggling goal completion:', error);
         this.error = error.message || 'Failed to update goal';
         this.loading = false;

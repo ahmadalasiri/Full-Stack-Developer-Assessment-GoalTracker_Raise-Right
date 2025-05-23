@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, catchError } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface LoginCredentials {
@@ -77,9 +77,12 @@ export class AuthService {
     }
     return null;
   }
-
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  get isAuthenticated$(): Observable<boolean> {
+    return this.currentUser$.pipe(map((user) => user !== null));
   }
 
   private handleAuthResponse(response: AuthResponse): void {

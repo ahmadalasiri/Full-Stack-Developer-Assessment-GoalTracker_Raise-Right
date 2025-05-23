@@ -9,12 +9,11 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { LoggerService } from '../services/logger.service';
 import { APP_CONSTANTS } from '../constants/app.constants';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  constructor(private router: Router, private logger: LoggerService) {}
+  constructor(private router: Router) {}
 
   intercept(
     req: HttpRequest<any>,
@@ -22,8 +21,6 @@ export class ErrorInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        this.logger.error('HTTP Error:', error);
-
         switch (error.status) {
           case APP_CONSTANTS.HTTP_STATUS.UNAUTHORIZED:
             // Redirect to login on unauthorized

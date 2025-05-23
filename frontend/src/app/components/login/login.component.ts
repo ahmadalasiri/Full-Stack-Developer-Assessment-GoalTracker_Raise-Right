@@ -39,7 +39,7 @@ export class LoginComponent {
         next: (response) => {
           console.log('Login successful:', response);
           // Ensure we have the token and user data
-          if (response?.token) {
+          if (response?.data?.token) {
             console.log('Navigating to dashboard...');
             // Navigate to dashboard after login
             this.router.navigate(['/dashboard']);

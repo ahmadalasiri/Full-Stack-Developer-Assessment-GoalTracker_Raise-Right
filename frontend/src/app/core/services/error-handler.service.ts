@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { APP_CONSTANTS } from '../constants/app.constants';
-import { LoggerService } from './logger.service';
 
 export interface ApiError {
   message: string;
@@ -15,7 +14,7 @@ export interface ApiError {
   providedIn: 'root',
 })
 export class ErrorHandlerService {
-  constructor(private logger: LoggerService) {}
+  constructor() {}
 
   handleError(error: HttpErrorResponse | Error): Observable<never> {
     let apiError: ApiError;
@@ -28,8 +27,6 @@ export class ErrorHandlerService {
         timestamp: new Date(),
         details: error.error,
       };
-
-      this.logger.error('HTTP Error:', apiError);
     } else {
       // Client-side error
       apiError = {
@@ -38,8 +35,6 @@ export class ErrorHandlerService {
         timestamp: new Date(),
         details: error,
       };
-
-      this.logger.error('Client Error:', apiError);
     }
 
     return throwError(() => apiError);
