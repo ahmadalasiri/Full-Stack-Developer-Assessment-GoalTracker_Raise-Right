@@ -70,15 +70,19 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadGoals();
   }
-
   createGoalForm(goal?: Goal): FormGroup {
+    // Set default deadline to 7 days from now for new goals
+    const defaultDeadline = new Date();
+    defaultDeadline.setDate(defaultDeadline.getDate() + 7);
+    const defaultDeadlineString = defaultDeadline.toISOString().split('T')[0];
+
     return this.fb.group({
       title: [goal?.title || '', [Validators.required]],
       description: [goal?.description || '', []],
       deadline: [
         goal?.deadline
           ? new Date(goal.deadline).toISOString().split('T')[0]
-          : '',
+          : defaultDeadlineString,
         [Validators.required],
       ],
       isPublic: [goal?.isPublic || false, []],
