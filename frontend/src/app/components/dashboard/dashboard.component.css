@@ -1,0 +1,20 @@
+/* Additional custom styles for dashboard */
+.goal-row-parent {
+    background-color: #f9fafb;
+}
+
+.goal-row-child {
+    padding-left: 2rem;
+    background-color: #f3f4f6;
+}
+
+/* Animation for loading spinner */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
