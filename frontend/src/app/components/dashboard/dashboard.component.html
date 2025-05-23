@@ -1,18 +1,14 @@
 <div class="container mx-auto p-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">My Goals</h1>
-        <div>
-            <button (click)="openGoalModal()"
-                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 mr-2 flex items-center transition-all duration-200 shadow-md hover:shadow-lg">
+        <div> <button (click)="openGoalModal()"
+                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center transition-all duration-200 shadow-md hover:shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd"
                         d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
                         clip-rule="evenodd" />
                 </svg>
                 Create New Goal
-            </button>
-            <button (click)="logout()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                Logout
             </button>
         </div>
     </div>
@@ -25,251 +21,288 @@
     <!-- Loading indicator -->
     <div *ngIf="loading" class="flex justify-center my-4">
         <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
-
-    <!-- Goals List -->
-    <div *ngIf="goals.length > 0; else noGoals" class="bg-white shadow-md rounded-lg">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Title
-                        </th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Deadline
-                        </th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Visibility
-                        </th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <ng-container *ngFor="let goal of goals">
-                        <!-- Parent Goal -->
-                        <tr [ngClass]="{'bg-gray-50': goal.completed}">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <input type="checkbox" [checked]="goal.completed" (change)="toggleCompleted(goal)"
-                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <button *ngIf="goal.children && goal.children.length > 0"
-                                        (click)="loadChildGoals(goal.id)"
-                                        class="mr-2 text-gray-500 hover:text-gray-700">
-                                        <span *ngIf="!isGoalExpanded(goal.id)">►</span>
-                                        <span *ngIf="isGoalExpanded(goal.id)">▼</span>
-                                    </button>
-                                    <span [ngClass]="{'line-through': goal.completed}">{{ goal.title }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                {{ goal.deadline | date:'mediumDate' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span *ngIf="goal.isPublic"
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Public
-                                </span>
-                                <span *ngIf="!goal.isPublic"
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                    Private
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button (click)="openGoalModal(goal)"
-                                    class="text-indigo-600 hover:text-indigo-900 mr-2">
-                                    Edit
-                                </button>
-                                <button (click)="deleteGoal(goal.id)" class="text-red-600 hover:text-red-900">
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-
-                        <!-- Child Goals (when expanded) -->
-                        <ng-container *ngIf="isGoalExpanded(goal.id) && childrenGoals[goal.id]">
-                            <tr *ngFor="let childGoal of childrenGoals[goal.id]"
-                                [ngClass]="{'bg-gray-50': childGoal.completed}">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <input type="checkbox" [checked]="childGoal.completed"
-                                        (change)="toggleCompleted(childGoal)"
-                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center pl-8">
-                                        <span [ngClass]="{'line-through': childGoal.completed}">{{ childGoal.title
-                                            }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ childGoal.deadline | date:'mediumDate' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span *ngIf="childGoal.isPublic"
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Public
-                                    </span>
-                                    <span *ngIf="!childGoal.isPublic"
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        Private
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button (click)="openGoalModal(childGoal)"
-                                        class="text-indigo-600 hover:text-indigo-900 mr-2">
-                                        Edit
-                                    </button>
-                                    <button (click)="deleteGoal(childGoal.id)" class="text-red-600 hover:text-red-900">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        </ng-container>
-                    </ng-container>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- No Goals Placeholder -->
-    <ng-template #noGoals>
-        <div *ngIf="!loading" class="bg-white p-6 rounded-lg shadow-md text-center">
-            <p class="text-gray-600">You don't have any goals yet.</p>
-            <button (click)="openGoalModal()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                Create Your First Goal
-            </button>
-        </div>
-    </ng-template>
-
-    <!-- Pagination Controls -->
-    <div *ngIf="totalPages > 1" class="flex justify-center mt-4">
-        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-            <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"
-                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                [ngClass]="{'opacity-50 cursor-not-allowed': currentPage === 1}">
-                Previous
-            </button>
-            <span
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium">
-                Page {{ currentPage }} of {{ totalPages }}
-            </span>
-            <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages"
-                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                [ngClass]="{'opacity-50 cursor-not-allowed': currentPage === totalPages}">
-                Next
-            </button>
-        </nav>
-    </div> <!-- Goal Modal (Create/Edit) -->
-    <div *ngIf="showGoalModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div class="p-6 relative">
-                <button (click)="closeGoalModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">
-                    {{ isEditMode ? 'Edit Goal' : 'Create New Goal' }}
-                </h3>
-                <form [formGroup]="goalForm" (ngSubmit)="saveGoal()">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
-                            Title
-                        </label>
-                        <input formControlName="title" id="title" type="text"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <div *ngIf="goalForm.get('title')?.invalid && goalForm.get('title')?.touched"
-                            class="text-red-500 text-xs mt-1">
-                            Title is required
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-                            Description
-                        </label>
-                        <textarea formControlName="description" id="description" rows="3"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="deadline">
-                            Deadline
-                        </label>
-                        <input formControlName="deadline" id="deadline" type="date"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <div *ngIf="goalForm.get('deadline')?.invalid && goalForm.get('deadline')?.touched"
-                            class="text-red-500 text-xs mt-1">
-                            Deadline is required
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="flex items-center">
-                            <input formControlName="isPublic" id="isPublic" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                            <label class="ml-2 block text-gray-700 text-sm font-bold" for="isPublic">
-                                Public Goal?
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="flex items-center">
-                            <input formControlName="completed" id="completed" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                            <label class="ml-2 block text-gray-700 text-sm font-bold" for="completed">
-                                Completed?
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="mb-4" *ngIf="!isEditMode">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="parentId">
-                            Parent Goal (Optional)
-                        </label>
-                        <select formControlName="parentId" id="parentId"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            <option [value]="null">No parent (root goal)</option>
-                            <option *ngFor="let goal of goals" [value]="goal.id">{{ goal.title }}</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center justify-end mt-6">
-                        <button type="button" (click)="closeGoalModal()"
-                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md mr-3 border border-gray-300 transition-colors duration-200">
-                            Cancel
-                        </button>
-                        <button type="submit" [disabled]="goalForm.invalid || loading"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow flex items-center">
-                            <span *ngIf="loading" class="mr-2">
-                                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
-                                </svg>
-                            </span>
-                            {{ isEditMode ? 'Update' : 'Create' }}
-                        </button>
-                    </div>
-                </form>
+    </div> <!-- Goal Tree and Details View -->
+    <div *ngIf="goals.length > 0; else noGoals" class="flex gap-6">
+        <!-- Goal Tree (Left Side) -->
+        <div class="w-1/3 bg-white shadow-md rounded-lg p-4 max-h-[calc(100vh-150px)] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold">Goal Tree</h2>
+                <!-- Tree pagination -->
+                <div *ngIf="totalPages > 1" class="flex items-center text-sm">
+                    <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"
+                        class="p-1 rounded hover:bg-gray-100"
+                        [ngClass]="{'opacity-50 cursor-not-allowed': currentPage === 1}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <span class="mx-2">{{ currentPage }}/{{ totalPages }}</span>
+                    <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages"
+                        class="p-1 rounded hover:bg-gray-100"
+                        [ngClass]="{'opacity-50 cursor-not-allowed': currentPage === totalPages}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
             </div>
+            <div class="goal-tree">
+                <ul class="space-y-2">
+                    <li *ngFor="let goal of goals" class="ml-1">
+                        <!-- Root goal -->
+                        <div [ngClass]="{'bg-blue-50 font-semibold': detailGoal?.id === goal.id}"
+                            class="flex items-center py-2 cursor-pointer hover:bg-gray-50 rounded px-2 border-l-2 border-transparent hover:border-blue-400"
+                            [class.border-blue-500]="detailGoal?.id === goal.id" (click)="selectGoal(goal)">
+                            <span *ngIf="childrenGoals[goal.id] && childrenGoals[goal.id].length > 0"
+                                class="mr-2 w-4 h-4 flex items-center justify-center text-sm text-gray-600"
+                                (click)="$event.stopPropagation(); toggleGoalExpansion(goal.id)">
+                                <span *ngIf="!isGoalExpanded(goal.id)">►</span>
+                                <span *ngIf="isGoalExpanded(goal.id)">▼</span>
+                            </span>
+                            <span *ngIf="!childrenGoals[goal.id] || childrenGoals[goal.id].length === 0"
+                                class="mr-2 w-4"></span>
+                            <span class="text-gray-800">{{ goal.title }}</span>
+                        </div>
+                        <!-- Child goals -->
+                        <ul *ngIf="isGoalExpanded(goal.id) && childrenGoals[goal.id]"
+                            class="ml-6 mt-1 space-y-1 border-l border-gray-200 pl-2">
+                            <li *ngFor="let child of childrenGoals[goal.id]">
+                                <div [ngClass]="{'bg-blue-50 font-semibold': detailGoal?.id === child.id}"
+                                    class="flex items-center py-1 cursor-pointer hover:bg-gray-50 rounded px-1 border-l-2 border-transparent hover:border-blue-400"
+                                    [class.border-blue-500]="detailGoal?.id === child.id" (click)="selectGoal(child)">
+                                    <span class="text-gray-600 text-sm">{{ child.title }}</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Goal Details (Right Side) -->
+        <div class="w-2/3 bg-white shadow-md rounded-lg">
+            <div *ngIf="detailGoal; else selectGoalMessage" class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold" [ngClass]="{'line-through': detailGoal.completed}">
+                            {{ detailGoal.title }}
+                        </h2>
+                        <div class="text-sm text-gray-500 mt-1">
+                            <span class="mr-3">Deadline: {{ detailGoal.deadline | date:'mediumDate' }}</span>
+                            <span>{{ detailGoal.isPublic ? 'Public' : 'Private' }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <button (click)="openGoalModal(detailGoal)" class="text-blue-600 hover:text-blue-800 mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                        </button>
+                        <button (click)="deleteGoal(detailGoal.id)" class="text-red-600 hover:text-red-800">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="my-4">
+                    <h3 class="font-semibold mb-2">Description</h3>
+                    <p class="whitespace-pre-wrap text-gray-700">{{ detailGoal.description || 'No description provided.'
+                        }}</p>
+                </div>
+
+                <div class="flex items-center mt-4 pt-4 border-t border-gray-200">
+                    <input type="checkbox" [checked]="detailGoal.completed" (change)="toggleCompleted(detailGoal)"
+                        class="h-5 w-5 mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <span class="text-gray-700">{{ detailGoal.completed ? 'Completed' : 'Mark as complete' }}</span>
+                </div>
+
+                <!-- Children section -->
+                <div class="mt-8">
+                    <h3 class="font-semibold mb-3">Child Goals</h3>
+                    <div *ngIf="childrenGoals[detailGoal.id]?.length; else noChildGoals"
+                        class="border rounded-md divide-y">
+                        <div *ngFor="let child of childrenGoals[detailGoal.id]" class="p-3 hover:bg-gray-50">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <input type="checkbox" [checked]="child.completed" (change)="toggleCompleted(child)"
+                                        class="h-4 w-4 mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <span [ngClass]="{'line-through': child.completed}" class="cursor-pointer"
+                                        (click)="selectGoal(child)">{{ child.title }}</span>
+                                </div>
+                                <div>
+                                    <button (click)="openGoalModal(child)"
+                                        class="text-blue-600 hover:text-blue-800 mr-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                    </button>
+                                    <button (click)="deleteGoal(child.id)" class="text-red-600 hover:text-red-800">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <ng-template #noChildGoals>
+                        <p class="text-gray-500 text-sm">No child goals yet. Create one by clicking the "Create New
+                            Goal" button.</p>
+                    </ng-template>
+                </div>
+            </div>
+
+            <ng-template #selectGoalMessage>
+                <div class="flex items-center justify-center h-[400px] text-gray-500">
+                    <div class="text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-3 text-gray-400" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 class="text-lg font-medium">Select a goal to view details</h3>
+                        <p class="mt-1">Click on any goal in the tree to view its details</p>
+                    </div>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+</div>
+
+<!-- No Goals Placeholder --> <ng-template #noGoals>
+    <div *ngIf="!loading" class="bg-white p-8 rounded-lg shadow-md text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <h3 class="text-xl font-medium text-gray-700 mb-2">No Goals Yet</h3>
+        <p class="text-gray-600 mb-4">Get started by creating your first goal</p>
+        <button (click)="openGoalModal()"
+            class="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center mx-auto transition-all duration-200 shadow-sm hover:shadow">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                    clip-rule="evenodd" />
+            </svg>
+            Create Your First Goal
+        </button>
+    </div>
+</ng-template>
+
+<!-- Goal Modal (Create/Edit) -->
+<div *ngIf="showGoalModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-6 relative">
+            <button (click)="closeGoalModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                {{ isEditMode ? 'Edit Goal' : 'Create New Goal' }}
+            </h3>
+            <form [formGroup]="goalForm" (ngSubmit)="saveGoal()">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+                        Title
+                    </label>
+                    <input formControlName="title" id="title" type="text"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <div *ngIf="goalForm.get('title')?.invalid && goalForm.get('title')?.touched"
+                        class="text-red-500 text-xs mt-1">
+                        Title is required
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                        Description
+                    </label>
+                    <textarea formControlName="description" id="description" rows="3"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="deadline">
+                        Deadline
+                    </label>
+                    <input formControlName="deadline" id="deadline" type="date"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <div *ngIf="goalForm.get('deadline')?.invalid && goalForm.get('deadline')?.touched"
+                        class="text-red-500 text-xs mt-1">
+                        Deadline is required
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex items-center">
+                        <input formControlName="isPublic" id="isPublic" type="checkbox"
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label class="ml-2 block text-gray-700 text-sm font-bold" for="isPublic">
+                            Public Goal?
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex items-center">
+                        <input formControlName="completed" id="completed" type="checkbox"
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label class="ml-2 block text-gray-700 text-sm font-bold" for="completed">
+                            Completed?
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-4" *ngIf="!isEditMode">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="parentId">
+                        Parent Goal (Optional)
+                    </label> <select formControlName="parentId" id="parentId"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option [value]="null">No parent (root goal)</option>
+                        <option *ngFor="let goal of getAvailableParentGoals()" [value]="goal.id">{{ goal.title }}
+                        </option>
+                    </select>
+                    <div class="text-xs text-gray-600 mt-1">
+                        Note: Goals can only be nested 2 levels deep (root and child).
+                    </div>
+                </div>
+                <div class="flex items-center justify-end mt-6">
+                    <button type="button" (click)="closeGoalModal()"
+                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md mr-3 border border-gray-300 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" [disabled]="goalForm.invalid || loading"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow flex items-center">
+                        <span *ngIf="loading" class="mr-2">
+                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </span> {{ isEditMode ? 'Update' : 'Create' }}
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

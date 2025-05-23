@@ -32,6 +32,7 @@ export class DashboardComponent implements OnInit {
   totalPages = 1;
   pageSize = 10;
   showGoalModal = false;
+  detailGoal: Goal | null = null; // Currently selected goal for details view
 
   constructor(
     private goalsService: GoalsService,
@@ -103,8 +104,13 @@ export class DashboardComponent implements OnInit {
           this.goals = [];
           this.totalPages = 1;
         }
-
         this.currentPage = page;
+
+        // If no goal is currently selected and there are goals, select the first one
+        if (!this.detailGoal && this.goals.length > 0) {
+          this.selectGoal(this.goals[0]);
+        }
+
         this.loading = false;
       },
       error: (error) => {
@@ -195,6 +201,12 @@ export class DashboardComponent implements OnInit {
                   this.goals[index] = response.data;
                 }
                 this.closeGoalModal();
+
+                // If this was the detail goal, update it
+                if (this.detailGoal?.id === this.selectedGoal!.id) {
+                  this.detailGoal = response.data;
+                }
+
                 // Reload goals to ensure proper order
                 this.loadGoals(this.currentPage);
               } else {
@@ -225,12 +237,28 @@ export class DashboardComponent implements OnInit {
               if (!formValue.parentId) {
                 // Add to the main goals list if it's a root goal
                 this.goals.push(response.data);
+                // Select the newly created goal
+                this.selectGoal(response.data);
               } else {
                 // If it's a child goal, refresh the parent's children
                 if (this.expandedGoals.has(formValue.parentId)) {
                   this.loadChildGoals(formValue.parentId);
                 }
+
+                // If we're adding a child to the current detail goal, ensure it's expanded
+                if (this.detailGoal?.id === formValue.parentId) {
+                  this.expandedGoals.add(formValue.parentId);
+
+                  // If the children are already loaded, add this goal to the list
+                  if (this.childrenGoals[formValue.parentId]) {
+                    this.childrenGoals[formValue.parentId].push(response.data);
+                  } else {
+                    // Otherwise load the children
+                    this.loadChildGoals(formValue.parentId);
+                  }
+                }
               }
+
               this.closeGoalModal();
               // Reload goals to ensure proper order
               this.loadGoals(this.currentPage);
@@ -256,6 +284,16 @@ export class DashboardComponent implements OnInit {
         next: (response) => {
           if (response.success || response.status === 204) {
             this.goals = this.goals.filter((goal) => goal.id !== id);
+
+            // If the deleted goal was the detail goal, clear it
+            if (this.detailGoal?.id === id) {
+              this.detailGoal = null;
+
+              // Select another goal if possible
+              if (this.goals.length > 0) {
+                this.selectGoal(this.goals[0]);
+              }
+            }
           } else {
             console.error('Failed to delete goal:', response);
             this.error = 'Failed to delete goal';
@@ -298,8 +336,33 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  /**
+   * Selects a goal for the detail view and loads its children
+   */
+  selectGoal(goal: Goal): void {
+    this.detailGoal = goal;
+
+    // Load children if not already loaded
+    if (!this.childrenGoals[goal.id]) {
+      this.loadChildGoals(goal.id);
+    }
+
+    // Add to expanded goals to show children in tree
+    if (!this.expandedGoals.has(goal.id)) {
+      this.expandedGoals.add(goal.id);
+    }
+  }
+
   isGoalExpanded(id: string): boolean {
     return this.expandedGoals.has(id);
+  }
+
+  toggleGoalExpansion(goalId: string): void {
+    if (this.expandedGoals.has(goalId)) {
+      this.expandedGoals.delete(goalId);
+    } else {
+      this.expandedGoals.add(goalId);
+    }
   }
 
   changePage(page: number): void {
@@ -311,5 +374,14 @@ export class DashboardComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  /**
+   * Returns the list of goals that can be selected as parents
+   * to enforce the 2-level nesting limit
+   */
+  getAvailableParentGoals(): Goal[] {
+    // Only root goals (goals without a parent) can be selected as parents
+    return this.goals.filter((goal) => !goal.parentId);
   }
 }

@@ -25,12 +25,11 @@ export class GoalsService {
   getGoal(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`);
   }
-
   // Get children of a goal
   getGoalChildren(
     id: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 100
   ): Observable<any> {
     return this.http.get(
       `${this.apiUrl}/${id}/children?page=${page}&limit=${limit}`
