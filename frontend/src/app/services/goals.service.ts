@@ -45,11 +45,15 @@ export class GoalsService {
       })
     );
   }
-
   // Get children of a specific goal
-  getGoalChildren(parentId: string): Observable<GoalsResponse> {
+  getGoalChildren(
+    parentId: string,
+    page: number = 1,
+    limit: number = 10
+  ): Observable<GoalsResponse> {
+    const params = { page: page.toString(), limit: limit.toString() };
     return this.http
-      .get<GoalsResponse>(`${this.apiUrl}/${parentId}/children`)
+      .get<GoalsResponse>(`${this.apiUrl}/${parentId}/children`, { params })
       .pipe(
         catchError((error) => {
           console.error(`Error fetching children for goal ${parentId}:`, error);

@@ -59,7 +59,7 @@ export class GoalsService {
   async findAll(
     userId: string,
     page: number = 1,
-    limit: number = 10,
+    limit: number = 20,
   ): Promise<PaginationResponse<Goal>> {
     // Get only root goals
     const [goals, total] = await this.goalsRepository.findAndCount({
@@ -148,7 +148,7 @@ export class GoalsService {
     limit: number = 10,
   ): Promise<PaginationResponse<Goal>> {
     const parent = await this.findOne(parentId, userId);
-    limit = 3;
+
     const [children, total] = await this.goalsRepository.findAndCount({
       where: { parentId: parent.id, ownerId: userId },
       order: { order: 'ASC' },

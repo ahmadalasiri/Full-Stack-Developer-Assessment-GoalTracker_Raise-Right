@@ -22,32 +22,15 @@
     <div *ngIf="loading" class="flex justify-center my-4">
         <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
     </div> <!-- Goal Tree and Details View -->
-    <div *ngIf="goals.length > 0; else noGoals" class="flex gap-6">
-        <!-- Goal Tree (Left Side) -->
-        <div class="w-1/3 bg-white shadow-md rounded-lg p-4 max-h-[calc(100vh-150px)] overflow-y-auto">
+    <div *ngIf="goals.length > 0; else noGoals" class="flex gap-6"> <!-- Goal Tree (Left Side) -->
+        <div class="w-1/3 bg-white shadow-md rounded-lg p-4 h-[600px] overflow-y-auto" #rootGoalsContainer
+            (scroll)="onRootGoalsScroll($event)">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold">Goal Tree</h2>
-                <!-- Tree pagination -->
-                <div *ngIf="totalPages > 1" class="flex items-center text-sm">
-                    <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"
-                        class="p-1 rounded hover:bg-gray-100"
-                        [ngClass]="{'opacity-50 cursor-not-allowed': currentPage === 1}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                    <span class="mx-2">{{ currentPage }}/{{ totalPages }}</span>
-                    <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages"
-                        class="p-1 rounded hover:bg-gray-100"
-                        [ngClass]="{'opacity-50 cursor-not-allowed': currentPage === totalPages}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
+                <!-- Loading indicator for infinite scroll -->
+                <div *ngIf="loadingMoreRootGoals" class="flex items-center text-sm">
+                    <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500 mr-2"></div>
+                    <span class="text-gray-600 text-xs">Loading more...</span>
                 </div>
             </div>
             <div class="goal-tree">
@@ -163,13 +146,20 @@
                     <input type="checkbox" [checked]="detailGoal.completed" (change)="toggleCompleted(detailGoal)"
                         class="h-5 w-5 mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <span class="text-gray-700">{{ detailGoal.completed ? 'Completed' : 'Mark as complete' }}</span>
-                </div>
-
-                <!-- Children section -->
+                </div> <!-- Children section -->
                 <div class="mt-8">
-                    <h3 class="font-semibold mb-3">Child Goals</h3>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-semibold">Child Goals</h3>
+                        <!-- Loading indicator for infinite scroll of child goals -->
+                        <div *ngIf="loadingMoreChildGoals && detailGoal" class="flex items-center text-sm">
+                            <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500 mr-2">
+                            </div>
+                            <span class="text-gray-600 text-xs">Loading more...</span>
+                        </div>
+                    </div>
                     <div *ngIf="childrenGoals[detailGoal.id]?.length; else noChildGoals"
-                        class="border rounded-md divide-y">
+                        class="border rounded-md divide-y h-[300px] overflow-y-auto" #childGoalsContainer
+                        (scroll)="onChildGoalsScroll($event)">
                         <div *ngFor="let child of childrenGoals[detailGoal.id]" class="p-3 hover:bg-gray-50">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center">

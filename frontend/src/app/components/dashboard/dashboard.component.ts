@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   GoalsService,
@@ -37,6 +37,26 @@ export class DashboardComponent implements OnInit {
   pageSize = 10;
   showGoalModal = false;
   detailGoal: Goal | null = null; // Currently selected goal for details view
+  // Infinite scrolling for root goals
+  loadingMoreRootGoals = false;
+  allRootGoalsLoaded = false;
+  scrollThreshold = 200; // pixels from bottom to trigger loading more
+  private scrollTimeout: any;
+
+  // Infinite scrolling for child goals
+  loadingMoreChildGoals = false;
+  allChildGoalsLoaded: { [parentId: string]: boolean } = {};
+  childGoalsPagination: {
+    [parentId: string]: {
+      currentPage: number;
+      totalPages: number;
+      pageSize: number;
+    };
+  } = {};
+  private childScrollTimeout: any;
+
+  @ViewChild('rootGoalsContainer') rootGoalsContainer: ElementRef | undefined;
+  @ViewChild('childGoalsContainer') childGoalsContainer: ElementRef | undefined;
 
   constructor(
     private goalsService: GoalsService,
@@ -66,16 +86,23 @@ export class DashboardComponent implements OnInit {
       completed: [goal?.completed || false, []],
     });
   }
-  loadGoals(page: number = 1): void {
-    this.loading = true;
+  loadGoals(page: number = 1, append: boolean = false): void {
+    if (page === 1) {
+      this.loading = true;
+    } else {
+      this.loadingMoreRootGoals = true;
+    }
+
     this.goalsService.getGoals(page, this.pageSize).subscribe({
       next: (response: GoalsResponse) => {
         console.log('API Response:', response);
 
+        let newGoals: Goal[] = [];
+
         // Based on the exact API response format from Postman
         // Format: { success: true, data: { data: [...], meta: {...} } }
         if (response && response.success === true && response.data) {
-          this.goals = response.data.data || [];
+          newGoals = response.data.data || [];
 
           // Use totalPages directly if available, otherwise calculate from totalItems
           if (response.data.meta) {
@@ -93,72 +120,157 @@ export class DashboardComponent implements OnInit {
           }
         } else if (Array.isArray(response)) {
           // Response format: [...goals]
-          this.goals = response;
+          newGoals = response;
           this.totalPages = 1;
         } else if (response && Array.isArray(response.data)) {
           // Response format: { data: [...goals] }
-          this.goals = response.data;
+          newGoals = response.data;
           // No meta in this case
           this.totalPages = 1;
         } else {
           console.warn('Unexpected API response format:', response);
-          this.goals = [];
+          newGoals = [];
           this.totalPages = 1;
         }
+
         this.currentPage = page;
+
+        // Determine if we've loaded all goals
+        this.allRootGoalsLoaded = page >= this.totalPages;
+
+        // Set or append goals based on the append flag
+        if (append) {
+          // Filter out any duplicate goals that might already be in the array
+          const existingIds = new Set(this.goals.map((goal) => goal.id));
+          const uniqueNewGoals = newGoals.filter(
+            (goal) => !existingIds.has(goal.id)
+          );
+          this.goals = [...this.goals, ...uniqueNewGoals];
+        } else {
+          this.goals = newGoals;
+        }
 
         // If no goal is currently selected and there are goals, select the first one
         if (!this.detailGoal && this.goals.length > 0) {
           this.selectGoal(this.goals[0]);
         }
+
         this.loading = false;
+        this.loadingMoreRootGoals = false;
       },
       error: (error: any) => {
         console.error('Error loading goals:', error);
         this.error = error.message || 'Failed to load goals';
         this.loading = false;
+        this.loadingMoreRootGoals = false;
       },
     });
   }
-  loadChildGoals(parentId: string): void {
-    if (this.expandedGoals.has(parentId)) {
+  loadChildGoals(
+    parentId: string,
+    page: number = 1,
+    append: boolean = false
+  ): void {
+    // For toggle functionality when clicking on a parent goal with children
+    if (this.expandedGoals.has(parentId) && page === 1 && !append) {
       this.expandedGoals.delete(parentId);
       return;
     }
 
-    this.loading = true;
-    this.goalsService.getGoalChildren(parentId).subscribe({
-      next: (response: GoalsResponse) => {
-        console.log('Child goals response:', response);
-        if (response) {
-          // Handle various response structures
-          if (
-            response.success === true &&
-            response.data &&
-            Array.isArray(response.data.data)
-          ) {
-            this.childrenGoals[parentId] = response.data.data;
-          } else if (response.data && Array.isArray(response.data)) {
-            this.childrenGoals[parentId] = response.data;
-          } else if (Array.isArray(response)) {
-            this.childrenGoals[parentId] = response;
+    // Initialize pagination for this parent if not already done
+    if (!this.childGoalsPagination[parentId]) {
+      this.childGoalsPagination[parentId] = {
+        currentPage: 1,
+        totalPages: 1,
+        pageSize: 10,
+      };
+    }
+
+    if (page === 1) {
+      this.loading = true;
+    } else {
+      this.loadingMoreChildGoals = true;
+    }
+
+    this.goalsService
+      .getGoalChildren(
+        parentId,
+        page,
+        this.childGoalsPagination[parentId].pageSize
+      )
+      .subscribe({
+        next: (response: GoalsResponse) => {
+          console.log('Child goals response:', response);
+          if (response) {
+            let newChildGoals: Goal[] = [];
+
+            // Handle various response structures
+            if (
+              response.success === true &&
+              response.data &&
+              Array.isArray(response.data.data)
+            ) {
+              newChildGoals = response.data.data;
+
+              // Update pagination info
+              if (response.data.meta) {
+                this.childGoalsPagination[parentId] = {
+                  currentPage: page,
+                  totalPages: response.data.meta.totalPages || 1,
+                  pageSize: response.data.meta.limit || 10,
+                };
+
+                // Check if all child goals are loaded
+                this.allChildGoalsLoaded[parentId] =
+                  page >= (response.data.meta.totalPages || 1);
+              }
+            } else if (response.data && Array.isArray(response.data)) {
+              newChildGoals = response.data;
+              this.allChildGoalsLoaded[parentId] = true; // Assume all loaded since no pagination info
+            } else if (Array.isArray(response)) {
+              newChildGoals = response;
+              this.allChildGoalsLoaded[parentId] = true; // Assume all loaded since no pagination info
+            } else {
+              newChildGoals = [];
+              console.warn('Unexpected child goals response format:', response);
+              this.allChildGoalsLoaded[parentId] = true; // Assume all loaded due to error
+            }
+
+            if (append && this.childrenGoals[parentId]) {
+              // Filter out duplicates
+              const existingIds = new Set(
+                this.childrenGoals[parentId].map((goal) => goal.id)
+              );
+              const uniqueNewGoals = newChildGoals.filter(
+                (goal) => !existingIds.has(goal.id)
+              );
+
+              // Append new goals to existing ones
+              this.childrenGoals[parentId] = [
+                ...this.childrenGoals[parentId],
+                ...uniqueNewGoals,
+              ];
+            } else {
+              this.childrenGoals[parentId] = newChildGoals;
+            }
+
+            this.expandedGoals.add(parentId);
           } else {
-            this.childrenGoals[parentId] = [];
-            console.warn('Unexpected child goals response format:', response);
+            console.error('Invalid response format:', response);
+            this.error = 'Failed to load child goals: Invalid response format';
+            this.allChildGoalsLoaded[parentId] = true; // Assume all loaded due to error
           }
-          this.expandedGoals.add(parentId);
-        } else {
-          console.error('Invalid response format:', response);
-          this.error = 'Failed to load child goals: Invalid response format';
-        }
-        this.loading = false;
-      },
-      error: (error: any) => {
-        console.error(`Error loading children for goal ${parentId}:`, error);
-        this.error = error.message || 'Failed to load child goals';
-        this.loading = false;
-      },
-    });
+          this.loading = false;
+          this.loadingMoreChildGoals = false;
+        },
+        error: (error: any) => {
+          console.error(`Error loading children for goal ${parentId}:`, error);
+          this.error = error.message || 'Failed to load child goals';
+          this.loading = false;
+          this.loadingMoreChildGoals = false;
+          this.allChildGoalsLoaded[parentId] = true; // Assume all loaded due to error
+        },
+      });
   }
   openGoalModal(goal?: Goal): void {
     this.isEditMode = !!goal;
@@ -372,10 +484,117 @@ export class DashboardComponent implements OnInit {
       this.expandedGoals.add(goalId);
     }
   }
+  // Handle scrolling in the root goals container with throttling
+  onRootGoalsScroll(event: Event): void {
+    if (this.loadingMoreRootGoals || this.allRootGoalsLoaded) {
+      return;
+    }
 
-  changePage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.loadGoals(page);
+    // Clear any existing timeout to prevent multiple rapid calls
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+    }
+
+    // Throttle scroll event to prevent excessive calls
+    this.scrollTimeout = setTimeout(() => {
+      const container = event.target as HTMLElement;
+      const scrollPosition = container.scrollTop + container.clientHeight;
+      const scrollHeight = container.scrollHeight;
+
+      // If we're near the bottom, load more
+      if (scrollHeight - scrollPosition < this.scrollThreshold) {
+        console.log(
+          `Triggering infinite scroll for root goals. Current page: ${this.currentPage}, Total pages: ${this.totalPages}`
+        );
+        this.loadMoreRootGoals();
+      }
+    }, 150); // 150ms throttle time
+  }
+  // Load more root goals
+  loadMoreRootGoals(): void {
+    if (this.loadingMoreRootGoals || this.allRootGoalsLoaded) {
+      return;
+    }
+
+    const nextPage = this.currentPage + 1;
+    console.log(
+      `Loading more root goals - Page ${nextPage} of ${this.totalPages}`
+    );
+
+    if (nextPage <= this.totalPages) {
+      this.loadGoals(nextPage, true);
+    } else {
+      // Mark as all loaded if we've reached the end
+      this.allRootGoalsLoaded = true;
+      console.log('All root goals have been loaded');
+    }
+  }
+
+  // Handle scrolling in the child goals container with throttling
+  onChildGoalsScroll(event: Event): void {
+    if (!this.detailGoal) {
+      return;
+    }
+
+    const parentId = this.detailGoal.id;
+
+    // Skip if already loading or all goals are loaded for this parent
+    if (this.loadingMoreChildGoals || this.allChildGoalsLoaded[parentId]) {
+      return;
+    }
+
+    // Clear any existing timeout to prevent multiple rapid calls
+    if (this.childScrollTimeout) {
+      clearTimeout(this.childScrollTimeout);
+    }
+
+    // Throttle scroll event to prevent excessive calls
+    this.childScrollTimeout = setTimeout(() => {
+      const container = event.target as HTMLElement;
+      const scrollPosition = container.scrollTop + container.clientHeight;
+      const scrollHeight = container.scrollHeight;
+
+      // If we're near the bottom, load more
+      if (scrollHeight - scrollPosition < this.scrollThreshold) {
+        console.log(
+          `Triggering infinite scroll for child goals of parent: ${parentId}`
+        );
+        this.loadMoreChildGoals();
+      }
+    }, 150); // 150ms throttle time
+  }
+
+  // Load more child goals for the current detail goal
+  loadMoreChildGoals(): void {
+    if (!this.detailGoal) {
+      console.warn('No detail goal selected for loading more child goals');
+      return;
+    }
+
+    const parentId = this.detailGoal.id;
+
+    // Prevent duplicate requests
+    if (this.loadingMoreChildGoals || this.allChildGoalsLoaded[parentId]) {
+      return;
+    }
+
+    const pagination = this.childGoalsPagination[parentId];
+    if (!pagination) {
+      console.warn(`No pagination info found for parent: ${parentId}`);
+      return;
+    }
+
+    const nextPage = pagination.currentPage + 1;
+    console.log(
+      `Loading page ${nextPage} of child goals for parent: ${parentId}`
+    );
+
+    if (nextPage <= pagination.totalPages) {
+      this.loadChildGoals(parentId, nextPage, true);
+    } else {
+      // Mark as all loaded if we've reached the end
+      this.allChildGoalsLoaded[parentId] = true;
+      console.log(`All child goals loaded for parent: ${parentId}`);
     }
   }
 
