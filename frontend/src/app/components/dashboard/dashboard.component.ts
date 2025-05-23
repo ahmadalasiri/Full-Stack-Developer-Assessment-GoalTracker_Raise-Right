@@ -375,13 +375,43 @@ export class DashboardComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
-
   /**
    * Returns the list of goals that can be selected as parents
-   * to enforce the 2-level nesting limit
+   * to enforce the 3-level nesting limit (root -> child -> sub-child)
    */
   getAvailableParentGoals(): Goal[] {
-    // Only root goals (goals without a parent) can be selected as parents
-    return this.goals.filter((goal) => !goal.parentId);
+    // Get all goals including children
+    const allGoals: Goal[] = [];
+
+    // Add root goals
+    allGoals.push(...this.goals);
+
+    // Add child goals
+    for (const goalId in this.childrenGoals) {
+      if (this.childrenGoals[goalId]) {
+        allGoals.push(...this.childrenGoals[goalId]);
+      }
+    }
+
+    // Filter out goals that already have children (to prevent 4th level)
+    // Allow root goals and child goals (but not sub-child goals) to be parents
+    return allGoals.filter((goal) => {
+      // Check if this goal has any children
+      const hasChildren =
+        this.childrenGoals[goal.id] && this.childrenGoals[goal.id].length > 0;
+
+      // If it's a root goal (no parent), allow it
+      if (!goal.parentId) {
+        return true;
+      }
+
+      // If it's a child goal (has parent but no children), allow it
+      if (goal.parentId && !hasChildren) {
+        return true;
+      }
+
+      // Don't allow sub-child goals or goals with children to be parents
+      return false;
+    });
   }
 }
