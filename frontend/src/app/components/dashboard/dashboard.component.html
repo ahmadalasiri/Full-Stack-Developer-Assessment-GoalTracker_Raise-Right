@@ -2,8 +2,14 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">My Goals</h1>
         <div>
-            <button (click)="openGoalModal()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mr-2">
-                Add Goal
+            <button (click)="openGoalModal()"
+                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 mr-2 flex items-center transition-all duration-200 shadow-md hover:shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                        clip-rule="evenodd" />
+                </svg>
+                Create New Goal
             </button>
             <button (click)="logout()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
                 Logout
@@ -165,14 +171,18 @@
                 Next
             </button>
         </nav>
-    </div>
-
-    <!-- Goal Modal (Create/Edit) -->
-    <div *ngIf="selectedGoal !== null || !isEditMode"
-        class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    </div> <!-- Goal Modal (Create/Edit) -->
+    <div *ngIf="showGoalModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div class="p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
+            <div class="p-6 relative">
+                <button (click)="closeGoalModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">
                     {{ isEditMode ? 'Edit Goal' : 'Create New Goal' }}
                 </h3>
                 <form [formGroup]="goalForm" (ngSubmit)="saveGoal()">
@@ -238,14 +248,23 @@
                             <option *ngFor="let goal of goals" [value]="goal.id">{{ goal.title }}</option>
                         </select>
                     </div>
-
                     <div class="flex items-center justify-end mt-6">
                         <button type="button" (click)="closeGoalModal()"
-                            class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2">
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md mr-3 border border-gray-300 transition-colors duration-200">
                             Cancel
                         </button>
                         <button type="submit" [disabled]="goalForm.invalid || loading"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50">
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow flex items-center">
+                            <span *ngIf="loading" class="mr-2">
+                                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                            </span>
                             {{ isEditMode ? 'Update' : 'Create' }}
                         </button>
                     </div>

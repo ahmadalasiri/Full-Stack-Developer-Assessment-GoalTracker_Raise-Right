@@ -31,6 +31,7 @@ export class DashboardComponent implements OnInit {
   currentPage = 1;
   totalPages = 1;
   pageSize = 10;
+  showGoalModal = false;
 
   constructor(
     private goalsService: GoalsService,
@@ -59,23 +60,26 @@ export class DashboardComponent implements OnInit {
       parentId: [goal?.parentId || null, []],
       completed: [goal?.completed || false, []],
     });
-  }  loadGoals(page: number = 1): void {
+  }
+  loadGoals(page: number = 1): void {
     this.loading = true;
     this.goalsService.getGoals(page, this.pageSize).subscribe({
       next: (response) => {
         console.log('API Response:', response);
-        
+
         // Based on the exact API response format from Postman
         // Format: { success: true, data: { data: [...], meta: {...} } }
         if (response && response.success === true && response.data) {
           this.goals = response.data.data || [];
-          
+
           // Use totalPages directly if available, otherwise calculate from totalItems
           if (response.data.meta) {
             if (response.data.meta.totalPages) {
               this.totalPages = response.data.meta.totalPages;
             } else if (response.data.meta.totalItems) {
-              this.totalPages = Math.ceil(response.data.meta.totalItems / this.pageSize);
+              this.totalPages = Math.ceil(
+                response.data.meta.totalItems / this.pageSize
+              );
             } else {
               this.totalPages = 1;
             }
@@ -99,7 +103,7 @@ export class DashboardComponent implements OnInit {
           this.goals = [];
           this.totalPages = 1;
         }
-        
+
         this.currentPage = page;
         this.loading = false;
       },
@@ -109,7 +113,8 @@ export class DashboardComponent implements OnInit {
         this.loading = false;
       },
     });
-  }  loadChildGoals(parentId: string): void {
+  }
+  loadChildGoals(parentId: string): void {
     if (this.expandedGoals.has(parentId)) {
       this.expandedGoals.delete(parentId);
       return;
@@ -149,17 +154,18 @@ export class DashboardComponent implements OnInit {
       },
     });
   }
-
   openGoalModal(goal?: Goal): void {
     this.isEditMode = !!goal;
     this.selectedGoal = goal || null;
     this.goalForm = this.createGoalForm(goal);
+    this.showGoalModal = true;
   }
 
   closeGoalModal(): void {
     this.selectedGoal = null;
     this.isEditMode = false;
     this.goalForm.reset();
+    this.showGoalModal = false;
   }
 
   saveGoal(): void {
