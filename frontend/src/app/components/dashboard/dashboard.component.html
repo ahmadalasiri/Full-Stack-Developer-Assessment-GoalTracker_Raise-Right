@@ -193,9 +193,13 @@
                                         clip-rule="evenodd" />
                                 </svg>
                                 Add Child Goal
-                            </button>                            <div *ngIf="!canAddChildGoal(detailGoal)" class="text-gray-500 text-sm mt-2 p-2 bg-gray-50 border border-gray-200 rounded-md">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </button>
+                            <div *ngIf="!canAddChildGoal(detailGoal)"
+                                class="text-gray-500 text-sm mt-2 p-2 bg-gray-50 border border-gray-200 rounded-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1 text-gray-600"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 Maximum nesting depth reached. Goals can only be nested 2 levels deep.
                             </div>
@@ -297,7 +301,6 @@
                         </label>
                     </div>
                 </div>
-
                 <div class="mb-4">
                     <div class="flex items-center">
                         <input formControlName="completed" id="completed" type="checkbox"
@@ -308,19 +311,8 @@
                     </div>
                 </div>
 
-                <div class="mb-4" *ngIf="!isEditMode">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="parentId">
-                        Parent Goal (Optional)
-                    </label> <select formControlName="parentId" id="parentId"
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option [value]="null">No parent (root goal)</option>
-                        <option *ngFor="let goal of getAvailableParentGoals()" [value]="goal.id">{{ goal.title }}
-                        </option>
-                    </select>
-                    <div class="text-xs text-gray-600 mt-1">
-                        Note: Goals can be nested up to 3 levels deep (root → child → sub-child).
-                    </div>
-                </div>
+                <!-- Parent Goal field is hidden but still in the form for when creating child goals -->
+                <input type="hidden" formControlName="parentId">
                 <div class="flex items-center justify-end mt-6">
                     <button type="button" (click)="closeGoalModal()"
                         class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md mr-3 border border-gray-300 transition-colors duration-200">

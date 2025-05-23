@@ -276,6 +276,13 @@ export class DashboardComponent implements OnInit {
     this.isEditMode = !!goal;
     this.selectedGoal = goal || null;
     this.goalForm = this.createGoalForm(goal);
+
+    // When creating a new goal (not editing), ensure parentId is null
+    // This way the main "Create New Goal" button always creates root goals
+    if (!this.isEditMode) {
+      this.goalForm.patchValue({ parentId: null });
+    }
+
     this.showGoalModal = true;
   }
 
