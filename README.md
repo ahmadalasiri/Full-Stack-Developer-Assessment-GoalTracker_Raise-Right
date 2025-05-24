@@ -141,18 +141,6 @@ docker-compose up postgres -d
 - **Impact**: Users must refresh to see changes from other sessions
 - **Solution**: WebSocket implementation
 
-#### File Attachments
-
-- **Issue**: Cannot attach files, images, or documents to goals
-- **Impact**: Limited goal documentation capabilities
-- **Solution**: AWS S3 or similar cloud storage integration
-
-#### Advanced Search and Filtering
-
-- **Issue**: No full-text search or advanced filtering capabilities
-- **Impact**: Difficult to find specific goals in large datasets
-- **Solution**: Elasticsearch integration or PostgreSQL full-text search
-
 #### JWT Storage in localStorage
 
 - **Issue**: Authentication tokens stored in localStorage instead of HTTP-only cookies
