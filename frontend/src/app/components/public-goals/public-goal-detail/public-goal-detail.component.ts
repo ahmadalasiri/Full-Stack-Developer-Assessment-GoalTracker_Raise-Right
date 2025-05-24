@@ -49,7 +49,6 @@ export class PublicGoalDetailComponent implements OnInit {
       }
     });
   }
-
   loadGoal(publicId: string): void {
     this.loading = true;
     this.error = '';

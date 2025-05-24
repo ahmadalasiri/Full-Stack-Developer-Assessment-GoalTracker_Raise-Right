@@ -28,11 +28,9 @@ export class PublicGoalsComponent implements OnInit {
     private authService: AuthService,
     private notificationService: NotificationService
   ) {}
-
   ngOnInit(): void {
     this.loadPublicGoals();
   }
-
   loadPublicGoals(page: number = 1, append: boolean = false): void {
     if (page === 1) {
       this.loading = true;

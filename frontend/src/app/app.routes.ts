@@ -36,6 +36,7 @@ export const routes: Routes = [
       import(
         './components/public-goals/public-goals-list/public-goals.component'
       ).then((m) => m.PublicGoalsComponent),
+    canActivate: [AuthGuard],
   },
   {
     path: 'public/:publicId',
@@ -43,6 +44,7 @@ export const routes: Routes = [
       import(
         './components/public-goals/public-goal-detail/public-goal-detail.component'
       ).then((m) => m.PublicGoalDetailComponent),
+    canActivate: [AuthGuard],
   },
   { path: '**', redirectTo: '/home' },
 ];
