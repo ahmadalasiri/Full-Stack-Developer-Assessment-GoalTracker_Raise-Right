@@ -153,4 +153,22 @@ export class PublicGoalsComponent implements OnInit {
       this.loadMoreGoals();
     }
   }
+
+  getStatusText(goal: Goal): string {
+    return goal.completed ? 'Completed' : 'Not Completed';
+  }
+
+  getDeadlineColorClass(deadline: string): string {
+    if (!deadline) return 'text-gray-600';
+
+    const days = this.getDaysUntilDeadline(deadline);
+
+    if (days < 0) {
+      return 'text-red-600'; // Past deadline (overdue)
+    } else if (days <= 1) {
+      return 'text-yellow-600'; // Less than 1 day remaining
+    } else {
+      return 'text-green-600'; // Future deadline (more than 1 day)
+    }
+  }
 }

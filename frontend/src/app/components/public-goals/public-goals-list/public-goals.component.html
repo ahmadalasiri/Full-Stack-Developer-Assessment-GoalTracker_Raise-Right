@@ -60,9 +60,7 @@
                     <!-- Description -->
                     <p *ngIf="goal.description" class="text-gray-600 text-sm mb-4 line-clamp-3">
                         {{ goal.description }}
-                    </p>
-
-                    <!-- Deadline Info -->
+                    </p> <!-- Deadline Info -->
                     <div class="flex items-center justify-between">
                         <div class="flex items-center text-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
@@ -70,21 +68,17 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span class="text-gray-600">{{ formatDate(goal.deadline) }}</span>
+                            <span [ngClass]="getDeadlineColorClass(goal.deadline)">{{ formatDate(goal.deadline)
+                                }}</span>
                         </div>
 
-                        <!-- Days until deadline -->
-                        <div class="text-sm font-medium" [ngClass]="{
-                   'text-red-600': isOverdue(goal.deadline) && !goal.completed,
-                   'text-orange-600': getDaysUntilDeadline(goal.deadline) <= 7 && getDaysUntilDeadline(goal.deadline) > 0 && !goal.completed,
-                   'text-gray-600': getDaysUntilDeadline(goal.deadline) > 7 || goal.completed
-                 }">
-                            <span *ngIf="!goal.completed"> <span *ngIf="isOverdue(goal.deadline)">{{
-                                    abs(getDaysUntilDeadline(goal.deadline))
-                                    }} days overdue</span>
-                                <span *ngIf="getDaysUntilDeadline(goal.deadline) === 0">Due today</span>
-                                <span *ngIf="getDaysUntilDeadline(goal.deadline) > 0">{{
-                                    getDaysUntilDeadline(goal.deadline) }} days left</span>
+                        <!-- Status -->
+                        <div class="text-sm font-medium">
+                            <span [ngClass]="{
+                                'text-green-600': goal.completed,
+                                'text-red-600': !goal.completed
+                            }">
+                                {{ getStatusText(goal) }}
                             </span>
                         </div>
                     </div>

@@ -709,11 +709,12 @@ export class DashboardComponent implements OnInit {
     // Otherwise, it's a sub-child
     return 2;
   }
-
   /**
    * Get deadline color class based on deadline date
    */
   getDeadlineColorClass(deadline: string): string {
+    if (!deadline) return 'text-gray-600';
+
     const deadlineDate = new Date(deadline);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -723,26 +724,26 @@ export class DashboardComponent implements OnInit {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-      return 'text-red-600 font-semibold'; // Past deadline
+      return 'text-red-600 font-semibold'; // Past deadline (overdue)
     } else if (diffDays <= 1) {
-      return 'text-orange-600 font-semibold'; // 1 day or less remaining
+      return 'text-yellow-600 font-semibold'; // Less than 1 day remaining
     } else {
-      return 'text-green-600'; // Future deadline
+      return 'text-green-600'; // Future deadline (more than 1 day)
     }
   }
 
   /**
-   * Get goal status text - simplified to just Completed or In Progress
+   * Get goal status text - simplified to just Completed or Not Completed
    */
   getGoalStatus(goal: Goal): string {
-    return goal.completed ? 'Completed' : 'In Progress';
+    return goal.completed ? 'Completed' : 'Not Completed';
   }
 
   /**
    * Get goal status color class
    */
   getGoalStatusColorClass(goal: Goal): string {
-    return goal.completed ? 'text-green-600 font-semibold' : 'text-blue-600';
+    return goal.completed ? 'text-green-600 font-semibold' : 'text-red-600';
   }
   onGoalDrop(event: CdkDragDrop<Goal[]>, parentId?: string): void {
     if (event.previousIndex === event.currentIndex) {

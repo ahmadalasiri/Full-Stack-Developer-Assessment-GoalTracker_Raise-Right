@@ -170,7 +170,6 @@ export class PublicGoalDetailComponent implements OnInit {
       day: 'numeric',
     });
   }
-
   isOverdue(goal: Goal): boolean {
     if (!goal.deadline) return false;
     return this.getDaysUntilDeadline(goal.deadline) < 0;
@@ -179,23 +178,25 @@ export class PublicGoalDetailComponent implements OnInit {
   isDeadlineWarning(goal: Goal): boolean {
     if (!goal.deadline) return false;
     const days = this.getDaysUntilDeadline(goal.deadline);
-    return days >= 0 && days <= 3;
+    return days >= 0 && days <= 1;
   }
 
   getStatusText(goal: Goal): string {
-    if (goal.completed) {
-      return 'Completed';
+    return goal.completed ? 'Completed' : 'Not Completed';
+  }
+
+  getDeadlineColorClass(goal: Goal): string {
+    if (!goal.deadline) return 'text-gray-600';
+
+    const days = this.getDaysUntilDeadline(goal.deadline);
+
+    if (days < 0) {
+      return 'text-red-600'; // Past deadline (overdue)
+    } else if (days <= 1) {
+      return 'text-yellow-600'; // Less than 1 day remaining
+    } else {
+      return 'text-green-600'; // Future deadline (more than 1 day)
     }
-    if (!goal.deadline) {
-      return 'In Progress';
-    }
-    if (this.isOverdue(goal)) {
-      return 'Overdue';
-    }
-    if (this.isDeadlineWarning(goal)) {
-      return 'Due Soon';
-    }
-    return 'In Progress';
   }
 
   getDaysUntilDeadline(deadline: string): number {

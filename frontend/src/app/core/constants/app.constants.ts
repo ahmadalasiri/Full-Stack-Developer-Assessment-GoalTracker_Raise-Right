@@ -61,7 +61,6 @@ export const GOAL_CONSTANTS = {
   MAX_NESTING_DEPTH: 3,
   DEFAULT_PAGE_SIZE: 10,
   MAX_CHILDREN_LIMIT: 3,
-  PRIORITY_LEVELS: ['Low', 'Medium', 'High', 'Critical'] as const,
   STATUS_OPTIONS: [
     'Not Started',
     'In Progress',
@@ -71,5 +70,4 @@ export const GOAL_CONSTANTS = {
 } as const;
 
 // Type definitions for constants
-export type PriorityLevel = (typeof GOAL_CONSTANTS.PRIORITY_LEVELS)[number];
 export type StatusOption = (typeof GOAL_CONSTANTS.STATUS_OPTIONS)[number];
