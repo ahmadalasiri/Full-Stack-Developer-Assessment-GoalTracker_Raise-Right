@@ -113,6 +113,10 @@ export class PublicGoalsComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  navigateToHome(): void {
+    this.router.navigate(['/']);
+  }
+
   isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
   }

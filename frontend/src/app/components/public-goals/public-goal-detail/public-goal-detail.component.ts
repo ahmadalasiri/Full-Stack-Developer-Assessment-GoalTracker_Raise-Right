@@ -216,6 +216,10 @@ export class PublicGoalDetailComponent implements OnInit {
     return Math.ceil(timeDiff / (1000 * 3600 * 24));
   }
 
+  navigateToHome(): void {
+    this.router.navigate(['/']);
+  }
+
   navigateToPublic(): void {
     this.router.navigate(['/public']);
   }
