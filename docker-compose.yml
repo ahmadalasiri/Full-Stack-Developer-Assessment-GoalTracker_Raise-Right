@@ -43,13 +43,14 @@ services: # PostgreSQL Database
     networks:
       - goaltracker-network
     # Removed volume mounts - they were overriding the build artifacts
-    restart: unless-stopped
-  # Frontend Application
+    restart: unless-stopped # Frontend Application
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: goaltracker-frontend
+    environment:
+      - API_URL=https://api.goal-tracker.ahmadalasiri.info/api
     ports:
       - "4200:4200"
     depends_on:
