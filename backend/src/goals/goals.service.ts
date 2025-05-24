@@ -163,8 +163,7 @@ export class GoalsService {
       data: children,
       meta,
     };
-  }
-  /**
+  } /**
    * Reorder goals by updating their order property
    * This implementation correctly handles shifting other goals to maintain order integrity
    */
@@ -183,6 +182,30 @@ export class GoalsService {
 
     // Get the parent ID (or null for root goals)
     const parentId = goal.parentId;
+
+    // Validate new order to ensure it's not negative
+    if (newOrder < 0) {
+      throw new BadRequestException('New order cannot be negative');
+    }
+
+    // Find the maximum order value for goals with the same parent to validate upper bound
+    const queryBuilder = this.goalsRepository
+      .createQueryBuilder('goal')
+      .select('COUNT(*)', 'count')
+      .where('goal.ownerId = :userId', { userId });
+
+    if (parentId) {
+      queryBuilder.andWhere('goal.parentId = :parentId', { parentId });
+    } else {
+      queryBuilder.andWhere('goal.parentId IS NULL');
+    }
+
+    const { count } = await queryBuilder.getRawOne();
+
+    // Allow reordering up to maximum position (count - 1) or inserting at the end (count)
+    if (newOrder > count) {
+      throw new BadRequestException(`New order cannot exceed ${count}`);
+    }
 
     // Start a transaction to ensure all updates are atomic
     const queryRunner =
