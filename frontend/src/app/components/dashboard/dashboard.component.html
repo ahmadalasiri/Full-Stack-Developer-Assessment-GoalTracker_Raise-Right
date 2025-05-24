@@ -344,34 +344,40 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
                         Title
                     </label>
-                    <input formControlName="title" id="title" type="text"
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <input formControlName="title" id="title" type="text" placeholder="Enter goal title"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        [ngClass]="{'border-red-500': goalForm.get('title')?.invalid && goalForm.get('title')?.touched}">
                     <div *ngIf="goalForm.get('title')?.invalid && goalForm.get('title')?.touched"
                         class="text-red-500 text-xs mt-1">
-                        Title is required
+                        <span *ngIf="goalForm.get('title')?.errors?.['required']">Title is required</span>
                     </div>
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
                         Description
                     </label>
                     <textarea formControlName="description" id="description" rows="3"
+                        placeholder="Enter goal description (optional)"
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                    <div class="text-gray-500 text-xs mt-1">
+                        Describe your goal with specific details to help track progress
+                    </div>
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="deadline">
                         Deadline
                     </label>
                     <input formControlName="deadline" id="deadline" type="date"
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        [ngClass]="{'border-red-500': goalForm.get('deadline')?.invalid && goalForm.get('deadline')?.touched}">
                     <div *ngIf="goalForm.get('deadline')?.invalid && goalForm.get('deadline')?.touched"
                         class="text-red-500 text-xs mt-1">
-                        Deadline is required
+                        <span *ngIf="goalForm.get('deadline')?.errors?.['required']">Deadline is required</span>
+                    </div>
+                    <div class="text-gray-500 text-xs mt-1">
+                        Choose a realistic deadline to keep track of your progress
                     </div>
                 </div>
-
                 <div class="mb-4">
                     <div class="flex items-center">
                         <input formControlName="isPublic" id="isPublic" type="checkbox"
@@ -379,6 +385,9 @@
                         <label class="ml-2 block text-gray-700 text-sm font-bold" for="isPublic">
                             Public Goal?
                         </label>
+                    </div>
+                    <div class="text-gray-500 text-xs mt-1 ml-6">
+                        Public goals can be viewed by other users in the Public Goals section
                     </div>
                 </div>
                 <div class="mb-4">
@@ -388,6 +397,9 @@
                         <label class="ml-2 block text-gray-700 text-sm font-bold" for="completed">
                             Completed?
                         </label>
+                    </div>
+                    <div class="text-gray-500 text-xs mt-1 ml-6">
+                        Mark the goal as completed when you've achieved it
                     </div>
                 </div>
 
