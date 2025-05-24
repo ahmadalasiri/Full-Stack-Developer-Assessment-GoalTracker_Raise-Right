@@ -38,19 +38,14 @@ export class LoginComponent {
       this.error = '';
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
-          console.log('Login successful:', response);
-          // Check for token in either response format
           const hasToken = response?.data?.token || response?.token;
           if (hasToken) {
-            console.log('Navigating to dashboard...');
             this.notificationService.success(
               'Login Successful',
               'Welcome back! You have been successfully logged in.'
             );
-            // Navigate to dashboard after login
             this.router.navigate(['/dashboard']);
           } else {
-            console.error('Missing token in response');
             this.error = 'Authentication failed - missing token';
             this.notificationService.error(
               'Login Failed',
@@ -60,7 +55,6 @@ export class LoginComponent {
           }
         },
         error: (error) => {
-          console.error('Login error:', error);
           this.error = error.error?.message || 'Login failed';
           this.notificationService.error(
             'Login Failed',
@@ -68,9 +62,6 @@ export class LoginComponent {
               'Login failed. Please check your credentials.'
           );
           this.loading = false;
-        },
-        complete: () => {
-          console.log('Login request complete');
         },
       });
     }

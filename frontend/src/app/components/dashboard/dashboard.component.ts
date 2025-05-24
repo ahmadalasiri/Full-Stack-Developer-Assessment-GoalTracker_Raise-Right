@@ -42,14 +42,15 @@ export class DashboardComponent implements OnInit {
   totalPages = 1;
   pageSize = 10;
   showGoalModal = false;
-  detailGoal: Goal | null = null; // Currently selected goal for details view
-  // Infinite scrolling for root goals
+  detailGoal: Goal | null = null;
+
+  // Infinite scrolling properties
   loadingMoreRootGoals = false;
   allRootGoalsLoaded = false;
-  scrollThreshold = 200; // pixels from bottom to trigger loading more
+  scrollThreshold = 200;
   private scrollTimeout: any;
 
-  // Infinite scrolling for child goals
+  // Child goals pagination
   loadingMoreChildGoals = false;
   allChildGoalsLoaded: { [parentId: string]: boolean } = {};
   childGoalsPagination: {
@@ -63,6 +64,7 @@ export class DashboardComponent implements OnInit {
 
   @ViewChild('rootGoalsContainer') rootGoalsContainer: ElementRef | undefined;
   @ViewChild('childGoalsContainer') childGoalsContainer: ElementRef | undefined;
+
   constructor(
     private goalsService: GoalsService,
     private authService: AuthService,
@@ -72,12 +74,11 @@ export class DashboardComponent implements OnInit {
   ) {
     this.goalForm = this.createGoalForm();
   }
-
   ngOnInit(): void {
     this.loadGoals();
   }
+
   createGoalForm(goal?: Goal): FormGroup {
-    // Set default deadline to 7 days from now for new goals
     const defaultDeadline = new Date();
     defaultDeadline.setDate(defaultDeadline.getDate() + 7);
     const defaultDeadlineString = defaultDeadline.toISOString().split('T')[0];
@@ -105,16 +106,10 @@ export class DashboardComponent implements OnInit {
 
     this.goalsService.getGoals(page, this.pageSize).subscribe({
       next: (response: GoalsResponse) => {
-        console.log('API Response:', response);
-
         let newGoals: Goal[] = [];
 
-        // Based on the exact API response format from Postman
-        // Format: { success: true, data: { data: [...], meta: {...} } }
         if (response && response.success === true && response.data) {
           newGoals = response.data.data || [];
-
-          // Use totalPages directly if available, otherwise calculate from totalItems
           if (response.data.meta) {
             if (response.data.meta.totalPages) {
               this.totalPages = response.data.meta.totalPages;
@@ -129,28 +124,20 @@ export class DashboardComponent implements OnInit {
             this.totalPages = 1;
           }
         } else if (Array.isArray(response)) {
-          // Response format: [...goals]
           newGoals = response;
           this.totalPages = 1;
         } else if (response && Array.isArray(response.data)) {
-          // Response format: { data: [...goals] }
           newGoals = response.data;
-          // No meta in this case
           this.totalPages = 1;
         } else {
-          console.warn('Unexpected API response format:', response);
           newGoals = [];
           this.totalPages = 1;
         }
 
         this.currentPage = page;
-
-        // Determine if we've loaded all goals
         this.allRootGoalsLoaded = page >= this.totalPages;
 
-        // Set or append goals based on the append flag
         if (append) {
-          // Filter out any duplicate goals that might already be in the array
           const existingIds = new Set(this.goals.map((goal) => goal.id));
           const uniqueNewGoals = newGoals.filter(
             (goal) => !existingIds.has(goal.id)
@@ -160,7 +147,6 @@ export class DashboardComponent implements OnInit {
           this.goals = newGoals;
         }
 
-        // If no goal is currently selected and there are goals, select the first one
         if (!this.detailGoal && this.goals.length > 0) {
           this.selectGoal(this.goals[0]);
         }
@@ -169,7 +155,6 @@ export class DashboardComponent implements OnInit {
         this.loadingMoreRootGoals = false;
       },
       error: (error: any) => {
-        console.error('Error loading goals:', error);
         this.error = error.message || 'Failed to load goals';
         this.loading = false;
         this.loadingMoreRootGoals = false;
@@ -181,13 +166,11 @@ export class DashboardComponent implements OnInit {
     page: number = 1,
     append: boolean = false
   ): void {
-    // For toggle functionality when clicking on a parent goal with children
     if (this.expandedGoals.has(parentId) && page === 1 && !append) {
       this.expandedGoals.delete(parentId);
       return;
     }
 
-    // Initialize pagination for this parent if not already done
     if (!this.childGoalsPagination[parentId]) {
       this.childGoalsPagination[parentId] = {
         currentPage: 1,
@@ -210,11 +193,9 @@ export class DashboardComponent implements OnInit {
       )
       .subscribe({
         next: (response: GoalsResponse) => {
-          console.log('Child goals response:', response);
           if (response) {
             let newChildGoals: Goal[] = [];
 
-            // Handle various response structures
             if (
               response.success === true &&
               response.data &&
@@ -222,7 +203,6 @@ export class DashboardComponent implements OnInit {
             ) {
               newChildGoals = response.data.data;
 
-              // Update pagination info
               if (response.data.meta) {
                 this.childGoalsPagination[parentId] = {
                   currentPage: page,
@@ -230,24 +210,21 @@ export class DashboardComponent implements OnInit {
                   pageSize: response.data.meta.limit || 10,
                 };
 
-                // Check if all child goals are loaded
                 this.allChildGoalsLoaded[parentId] =
                   page >= (response.data.meta.totalPages || 1);
               }
             } else if (response.data && Array.isArray(response.data)) {
               newChildGoals = response.data;
-              this.allChildGoalsLoaded[parentId] = true; // Assume all loaded since no pagination info
+              this.allChildGoalsLoaded[parentId] = true;
             } else if (Array.isArray(response)) {
               newChildGoals = response;
-              this.allChildGoalsLoaded[parentId] = true; // Assume all loaded since no pagination info
+              this.allChildGoalsLoaded[parentId] = true;
             } else {
               newChildGoals = [];
-              console.warn('Unexpected child goals response format:', response);
-              this.allChildGoalsLoaded[parentId] = true; // Assume all loaded due to error
+              this.allChildGoalsLoaded[parentId] = true;
             }
 
             if (append && this.childrenGoals[parentId]) {
-              // Filter out duplicates
               const existingIds = new Set(
                 this.childrenGoals[parentId].map((goal) => goal.id)
               );
@@ -255,7 +232,6 @@ export class DashboardComponent implements OnInit {
                 (goal) => !existingIds.has(goal.id)
               );
 
-              // Append new goals to existing ones
               this.childrenGoals[parentId] = [
                 ...this.childrenGoals[parentId],
                 ...uniqueNewGoals,
@@ -266,19 +242,18 @@ export class DashboardComponent implements OnInit {
 
             this.expandedGoals.add(parentId);
           } else {
-            console.error('Invalid response format:', response);
             this.error = 'Failed to load child goals: Invalid response format';
-            this.allChildGoalsLoaded[parentId] = true; // Assume all loaded due to error
+            this.allChildGoalsLoaded[parentId] = true;
           }
+
           this.loading = false;
           this.loadingMoreChildGoals = false;
         },
         error: (error: any) => {
-          console.error(`Error loading children for goal ${parentId}:`, error);
           this.error = error.message || 'Failed to load child goals';
           this.loading = false;
           this.loadingMoreChildGoals = false;
-          this.allChildGoalsLoaded[parentId] = true; // Assume all loaded due to error
+          this.allChildGoalsLoaded[parentId] = true;
         },
       });
   }
@@ -287,8 +262,6 @@ export class DashboardComponent implements OnInit {
     this.selectedGoal = goal || null;
     this.goalForm = this.createGoalForm(goal);
 
-    // When creating a new goal (not editing), ensure parentId is null
-    // This way the main "Create New Goal" button always creates root goals
     if (!this.isEditMode) {
       this.goalForm.patchValue({ parentId: null });
     }
@@ -297,15 +270,14 @@ export class DashboardComponent implements OnInit {
   }
 
   createChildGoal(parentId: string): void {
-    // Create a new goal form with the parent ID pre-filled
     this.isEditMode = false;
     this.selectedGoal = null;
     this.goalForm = this.createGoalForm();
     this.goalForm.patchValue({ parentId: parentId });
     this.showGoalModal = true;
   }
+
   closeGoalModal(): void {
-    // No longer showing confirmation dialog
     this.selectedGoal = null;
     this.isEditMode = false;
     this.goalForm.reset();
@@ -318,147 +290,135 @@ export class DashboardComponent implements OnInit {
       const formValue = this.goalForm.value;
 
       if (this.isEditMode && this.selectedGoal) {
-        // Update existing goal
-        const updateDto: UpdateGoalDto = {
-          title: formValue.title,
-          description: formValue.description,
-          deadline: formValue.deadline,
-          isPublic: formValue.isPublic,
-          completed: formValue.completed,
-        };
-        this.goalsService
-          .updateGoal(this.selectedGoal.id, updateDto)
-          .subscribe({
-            next: (response: GoalResponse) => {
-              if (response.success && response.data) {
-                // Update the goal in the list
-                const index = this.goals.findIndex(
-                  (g) => g.id === this.selectedGoal!.id
-                );
-                if (index !== -1) {
-                  this.goals[index] = response.data;
-                }
-                this.closeGoalModal();
-
-                // If this was the detail goal, update it
-                if (this.detailGoal?.id === this.selectedGoal!.id) {
-                  this.detailGoal = response.data;
-                }
-
-                // Show success notification
-                this.notificationService.success(
-                  'Goal Updated',
-                  'Your goal has been successfully updated.'
-                );
-
-                // Reload goals to ensure proper order
-                this.loadGoals(this.currentPage);
-              } else {
-                console.error('Invalid response format:', response);
-                this.error = 'Failed to update goal: Invalid response format';
-                this.notificationService.error(
-                  'Update Failed',
-                  'Failed to update goal: Invalid response format'
-                );
-              }
-              this.loading = false;
-            },
-            error: (error: any) => {
-              console.error('Error updating goal:', error);
-              this.error = error.message || 'Failed to update goal';
-              this.notificationService.error(
-                'Update Failed',
-                error.message || 'Failed to update goal'
-              );
-              this.loading = false;
-            },
-          });
+        this.updateGoal(formValue);
       } else {
-        // Create new goal
-        const createDto: CreateGoalDto = {
-          title: formValue.title,
-          description: formValue.description,
-          deadline: formValue.deadline,
-          isPublic: formValue.isPublic,
-          parentId: formValue.parentId,
-          completed: formValue.completed,
-        };
-        this.goalsService.createGoal(createDto).subscribe({
-          next: (response: GoalResponse) => {
-            if (response.success && response.data) {
-              if (!formValue.parentId) {
-                // Add to the main goals list if it's a root goal
-                this.goals.push(response.data);
-                // Select the newly created goal
-                this.selectGoal(response.data);
-                this.notificationService.success(
-                  'Goal Created',
-                  'Your new root goal has been successfully created.'
-                );
-              } else {
-                // If it's a child goal, refresh the parent's children
-                if (this.expandedGoals.has(formValue.parentId)) {
-                  this.loadChildGoals(formValue.parentId);
-                }
-
-                // If we're adding a child to the current detail goal, ensure it's expanded
-                if (this.detailGoal?.id === formValue.parentId) {
-                  this.expandedGoals.add(formValue.parentId);
-
-                  // If the children are already loaded, add this goal to the list
-                  if (this.childrenGoals[formValue.parentId]) {
-                    this.childrenGoals[formValue.parentId].push(response.data);
-                  } else {
-                    // Otherwise load the children
-                    this.loadChildGoals(formValue.parentId);
-                  }
-                }
-                this.notificationService.success(
-                  'Sub-Goal Created',
-                  'Your new sub-goal has been successfully created.'
-                );
-              }
-
-              this.closeGoalModal();
-              // Reload goals to ensure proper order
-              this.loadGoals(this.currentPage);
-            } else {
-              console.error('Invalid response format:', response);
-              this.error = 'Failed to create goal: Invalid response format';
-              this.notificationService.error(
-                'Creation Failed',
-                'Failed to create goal: Invalid response format'
-              );
-            }
-            this.loading = false;
-          },
-          error: (error: any) => {
-            console.error('Error creating goal:', error);
-            this.error = error.message || 'Failed to create goal';
-            this.notificationService.error(
-              'Creation Failed',
-              error.message || 'Failed to create goal'
-            );
-            this.loading = false;
-          },
-        });
+        this.createGoal(formValue);
       }
     }
+  }
+
+  private updateGoal(formValue: any): void {
+    const updateDto: UpdateGoalDto = {
+      title: formValue.title,
+      description: formValue.description,
+      deadline: formValue.deadline,
+      isPublic: formValue.isPublic,
+      completed: formValue.completed,
+    };
+
+    this.goalsService.updateGoal(this.selectedGoal!.id, updateDto).subscribe({
+      next: (response: GoalResponse) => {
+        if (response.success && response.data) {
+          const index = this.goals.findIndex(
+            (g) => g.id === this.selectedGoal!.id
+          );
+          if (index !== -1) {
+            this.goals[index] = response.data;
+          }
+          this.closeGoalModal();
+
+          if (this.detailGoal?.id === this.selectedGoal!.id) {
+            this.detailGoal = response.data;
+          }
+
+          this.notificationService.success(
+            'Goal Updated',
+            'Your goal has been successfully updated.'
+          );
+
+          this.loadGoals(this.currentPage);
+        } else {
+          this.error = 'Failed to update goal: Invalid response format';
+          this.notificationService.error(
+            'Update Failed',
+            'Failed to update goal: Invalid response format'
+          );
+        }
+        this.loading = false;
+      },
+      error: (error: any) => {
+        this.error = error.message || 'Failed to update goal';
+        this.notificationService.error(
+          'Update Failed',
+          error.message || 'Failed to update goal'
+        );
+        this.loading = false;
+      },
+    });
+  }
+
+  private createGoal(formValue: any): void {
+    const createDto: CreateGoalDto = {
+      title: formValue.title,
+      description: formValue.description,
+      deadline: formValue.deadline,
+      isPublic: formValue.isPublic,
+      parentId: formValue.parentId,
+      completed: formValue.completed,
+    };
+
+    this.goalsService.createGoal(createDto).subscribe({
+      next: (response: GoalResponse) => {
+        if (response.success && response.data) {
+          if (!formValue.parentId) {
+            this.goals.push(response.data);
+            this.selectGoal(response.data);
+            this.notificationService.success(
+              'Goal Created',
+              'Your new root goal has been successfully created.'
+            );
+          } else {
+            if (this.expandedGoals.has(formValue.parentId)) {
+              this.loadChildGoals(formValue.parentId);
+            }
+
+            if (this.detailGoal?.id === formValue.parentId) {
+              this.expandedGoals.add(formValue.parentId);
+
+              if (this.childrenGoals[formValue.parentId]) {
+                this.childrenGoals[formValue.parentId].push(response.data);
+              } else {
+                this.loadChildGoals(formValue.parentId);
+              }
+            }
+            this.notificationService.success(
+              'Sub-Goal Created',
+              'Your new sub-goal has been successfully created.'
+            );
+          }
+
+          this.closeGoalModal();
+          this.loadGoals(this.currentPage);
+        } else {
+          this.error = 'Failed to create goal: Invalid response format';
+          this.notificationService.error(
+            'Creation Failed',
+            'Failed to create goal: Invalid response format'
+          );
+        }
+        this.loading = false;
+      },
+      error: (error: any) => {
+        this.error = error.message || 'Failed to create goal';
+        this.notificationService.error(
+          'Creation Failed',
+          error.message || 'Failed to create goal'
+        );
+        this.loading = false;
+      },
+    });
   }
   deleteGoal(id: string): void {
     if (confirm('Are you sure you want to delete this goal?')) {
       this.loading = true;
       this.goalsService.deleteGoal(id).subscribe({
         next: (response: any) => {
-          // Handle successful deletion - check for response being null or having success or status properties
           if (
             (response && (response.success || response.status === 204)) ||
             !response
           ) {
-            // Filter out the deleted goal from the goals list
             this.goals = this.goals.filter((goal) => goal.id !== id);
 
-            // Also check if this goal exists in any of the childrenGoals collections and remove it
             for (const parentId in this.childrenGoals) {
               if (this.childrenGoals[parentId]) {
                 this.childrenGoals[parentId] = this.childrenGoals[
@@ -467,23 +427,19 @@ export class DashboardComponent implements OnInit {
               }
             }
 
-            // If the deleted goal was the detail goal, clear it
             if (this.detailGoal?.id === id) {
               this.detailGoal = null;
 
-              // Select another goal if possible
               if (this.goals.length > 0) {
                 this.selectGoal(this.goals[0]);
               }
             }
 
-            // Show success notification
             this.notificationService.success(
               'Goal Deleted',
               'The goal has been successfully deleted.'
             );
           } else {
-            console.error('Failed to delete goal:', response);
             this.error = 'Failed to delete goal';
             this.notificationService.error(
               'Deletion Failed',
@@ -493,7 +449,6 @@ export class DashboardComponent implements OnInit {
           this.loading = false;
         },
         error: (error: any) => {
-          console.error('Error deleting goal:', error);
           this.error = error.message || 'Failed to delete goal';
           this.notificationService.error(
             'Deletion Failed',
@@ -504,6 +459,7 @@ export class DashboardComponent implements OnInit {
       });
     }
   }
+
   toggleCompleted(goal: Goal): void {
     this.loading = true;
     const updateDto: UpdateGoalDto = {
@@ -511,20 +467,15 @@ export class DashboardComponent implements OnInit {
     };
     this.goalsService.updateGoal(goal.id, updateDto).subscribe({
       next: (response: any) => {
-        console.log('Toggle completed response:', response);
-        // Check for any valid response and toggle the state regardless of response format
-        // as long as there's no error
         if (response) {
           goal.completed = !goal.completed;
         } else {
-          console.error('Invalid response format:', response);
           this.error =
             'Failed to update goal completion: Invalid response format';
         }
         this.loading = false;
       },
       error: (error: any) => {
-        console.error('Error toggling goal completion:', error);
         this.error = error.message || 'Failed to update goal';
         this.loading = false;
       },
@@ -559,53 +510,40 @@ export class DashboardComponent implements OnInit {
       this.expandedGoals.add(goalId);
     }
   }
-  // Handle scrolling in the root goals container with throttling
   onRootGoalsScroll(event: Event): void {
     if (this.loadingMoreRootGoals || this.allRootGoalsLoaded) {
       return;
     }
 
-    // Clear any existing timeout to prevent multiple rapid calls
     if (this.scrollTimeout) {
       clearTimeout(this.scrollTimeout);
     }
 
-    // Throttle scroll event to prevent excessive calls
     this.scrollTimeout = setTimeout(() => {
       const container = event.target as HTMLElement;
       const scrollPosition = container.scrollTop + container.clientHeight;
       const scrollHeight = container.scrollHeight;
 
-      // If we're near the bottom, load more
       if (scrollHeight - scrollPosition < this.scrollThreshold) {
-        console.log(
-          `Triggering infinite scroll for root goals. Current page: ${this.currentPage}, Total pages: ${this.totalPages}`
-        );
         this.loadMoreRootGoals();
       }
-    }, 150); // 150ms throttle time
+    }, 150);
   }
-  // Load more root goals
+
   loadMoreRootGoals(): void {
     if (this.loadingMoreRootGoals || this.allRootGoalsLoaded) {
       return;
     }
 
     const nextPage = this.currentPage + 1;
-    console.log(
-      `Loading more root goals - Page ${nextPage} of ${this.totalPages}`
-    );
 
     if (nextPage <= this.totalPages) {
       this.loadGoals(nextPage, true);
     } else {
-      // Mark as all loaded if we've reached the end
       this.allRootGoalsLoaded = true;
-      console.log('All root goals have been loaded');
     }
   }
 
-  // Handle scrolling in the child goals container with throttling
   onChildGoalsScroll(event: Event): void {
     if (!this.detailGoal) {
       return;
@@ -613,63 +551,47 @@ export class DashboardComponent implements OnInit {
 
     const parentId = this.detailGoal.id;
 
-    // Skip if already loading or all goals are loaded for this parent
     if (this.loadingMoreChildGoals || this.allChildGoalsLoaded[parentId]) {
       return;
     }
 
-    // Clear any existing timeout to prevent multiple rapid calls
     if (this.childScrollTimeout) {
       clearTimeout(this.childScrollTimeout);
     }
 
-    // Throttle scroll event to prevent excessive calls
     this.childScrollTimeout = setTimeout(() => {
       const container = event.target as HTMLElement;
       const scrollPosition = container.scrollTop + container.clientHeight;
       const scrollHeight = container.scrollHeight;
 
-      // If we're near the bottom, load more
       if (scrollHeight - scrollPosition < this.scrollThreshold) {
-        console.log(
-          `Triggering infinite scroll for child goals of parent: ${parentId}`
-        );
         this.loadMoreChildGoals();
       }
-    }, 150); // 150ms throttle time
+    }, 150);
   }
 
-  // Load more child goals for the current detail goal
   loadMoreChildGoals(): void {
     if (!this.detailGoal) {
-      console.warn('No detail goal selected for loading more child goals');
       return;
     }
 
     const parentId = this.detailGoal.id;
 
-    // Prevent duplicate requests
     if (this.loadingMoreChildGoals || this.allChildGoalsLoaded[parentId]) {
       return;
     }
 
     const pagination = this.childGoalsPagination[parentId];
     if (!pagination) {
-      console.warn(`No pagination info found for parent: ${parentId}`);
       return;
     }
 
     const nextPage = pagination.currentPage + 1;
-    console.log(
-      `Loading page ${nextPage} of child goals for parent: ${parentId}`
-    );
 
     if (nextPage <= pagination.totalPages) {
       this.loadChildGoals(parentId, nextPage, true);
     } else {
-      // Mark as all loaded if we've reached the end
       this.allChildGoalsLoaded[parentId] = true;
-      console.log(`All child goals loaded for parent: ${parentId}`);
     }
   }
 
@@ -822,32 +744,22 @@ export class DashboardComponent implements OnInit {
   getGoalStatusColorClass(goal: Goal): string {
     return goal.completed ? 'text-green-600 font-semibold' : 'text-blue-600';
   }
-
-  /**
-   * Handle drag and drop reordering of goals
-   */
   onGoalDrop(event: CdkDragDrop<Goal[]>, parentId?: string): void {
     if (event.previousIndex === event.currentIndex) {
-      return; // No change needed
+      return;
     }
 
     const goalList = parentId ? this.childrenGoals[parentId] : this.goals;
     const movedGoal = goalList[event.previousIndex];
 
-    // Update local array first for immediate UI feedback
     moveItemInArray(goalList, event.previousIndex, event.currentIndex);
 
-    // Send reorder request to backend
     const newOrder = event.currentIndex;
     this.goalsService.reorderGoal(movedGoal.id, newOrder).subscribe({
-      next: (response: GoalResponse) => {
-        console.log('Goal reordered successfully:', response);
-        // Optionally refresh the goals to get updated order from backend
+      next: () => {
         this.loadGoals(this.currentPage);
       },
-      error: (error: any) => {
-        console.error('Error reordering goal:', error);
-        // Revert the local change on error
+      error: () => {
         moveItemInArray(goalList, event.currentIndex, event.previousIndex);
         this.error = 'Failed to reorder goal. Please try again.';
       },

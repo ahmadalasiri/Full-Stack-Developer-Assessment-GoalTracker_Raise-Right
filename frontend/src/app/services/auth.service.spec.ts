@@ -134,12 +134,9 @@ describe('AuthService', () => {
     it('should return null when no user exists', () => {
       expect(service.getCurrentUser()).toBeNull();
     });
-
     it('should return null when user data is invalid JSON', () => {
       localStorage.setItem(environment.auth.userKey, 'invalid-json');
-      spyOn(console, 'error');
       expect(service.getCurrentUser()).toBeNull();
-      expect(console.error).toHaveBeenCalled();
     });
   });
 

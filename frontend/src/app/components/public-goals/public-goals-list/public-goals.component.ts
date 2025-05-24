@@ -39,11 +39,8 @@ export class PublicGoalsComponent implements OnInit {
     } else {
       this.loadingMore = true;
     }
-
     this.goalsService.getPublicGoals(page, this.pageSize).subscribe({
       next: (response: GoalsResponse) => {
-        console.log('Public goals response:', response);
-
         let newGoals: Goal[] = [];
 
         if (response && response.success === true && response.data) {
@@ -55,7 +52,6 @@ export class PublicGoalsComponent implements OnInit {
         } else if (Array.isArray(response)) {
           newGoals = response;
         } else {
-          console.warn('Unexpected API response format:', response);
           newGoals = [];
         }
 
@@ -77,7 +73,6 @@ export class PublicGoalsComponent implements OnInit {
         this.loadingMore = false;
       },
       error: (error: any) => {
-        console.error('Error loading public goals:', error);
         this.error = error.message || 'Failed to load public goals';
         this.notificationService.error(
           'Loading Failed',

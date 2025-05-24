@@ -23,24 +23,14 @@ export class ErrorInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         switch (error.status) {
           case APP_CONSTANTS.HTTP_STATUS.UNAUTHORIZED:
-            // Redirect to login on unauthorized
             this.router.navigate(['/login']);
             break;
           case APP_CONSTANTS.HTTP_STATUS.FORBIDDEN:
-            // Handle forbidden access
-            console.warn('Access forbidden');
-            break;
           case APP_CONSTANTS.HTTP_STATUS.NOT_FOUND:
-            // Handle not found
-            console.warn('Resource not found');
-            break;
           case APP_CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR:
-            // Handle server error
-            console.error('Internal server error');
-            break;
           default:
-            // Handle other errors
-            console.error('An error occurred:', error.message);
+            // Handle errors silently or with appropriate user feedback
+            break;
         }
 
         return throwError(() => error);

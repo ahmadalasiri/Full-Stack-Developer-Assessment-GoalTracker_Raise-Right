@@ -53,11 +53,8 @@ export class PublicGoalDetailComponent implements OnInit {
   loadGoal(publicId: string): void {
     this.loading = true;
     this.error = '';
-
     this.goalsService.getPublicGoal(publicId).subscribe({
       next: (response: GoalResponse) => {
-        console.log('Public goal response:', response);
-
         if (response && response.success && response.data) {
           this.goal = response.data;
           // Load children goals for detailed view
@@ -68,7 +65,6 @@ export class PublicGoalDetailComponent implements OnInit {
         this.loading = false;
       },
       error: (error: any) => {
-        console.error('Error loading public goal:', error);
         this.error =
           error.status === 404 ? 'Goal not found' : 'Failed to load goal';
         this.loading = false;
@@ -89,8 +85,6 @@ export class PublicGoalDetailComponent implements OnInit {
       .getPublicGoalChildren(this.goal.publicId, page, this.pageSize)
       .subscribe({
         next: (response: GoalsResponse) => {
-          console.log('Public goal children response:', response);
-
           let newChildGoals: Goal[] = [];
 
           if (response && response.success === true && response.data) {
@@ -126,7 +120,6 @@ export class PublicGoalDetailComponent implements OnInit {
           this.loadingMoreChildren = false;
         },
         error: (error: any) => {
-          console.error('Error loading public goal children:', error);
           this.loadingChildren = false;
           this.loadingMoreChildren = false;
         },
@@ -143,11 +136,7 @@ export class PublicGoalDetailComponent implements OnInit {
       this.loadChildGoals(nextPage, true);
     }
   }
-
   toggleChildrenExpansion(): void {
-    this.expandChildren = !this.expandChildren;
-  }
-  toggleChildGoals(): void {
     this.expandChildren = !this.expandChildren;
     if (this.expandChildren && this.childGoals.length === 0) {
       this.loadChildGoals();
@@ -257,7 +246,6 @@ export class PublicGoalDetailComponent implements OnInit {
           this.loadingChildSubGoals.delete(childGoal.publicId!);
         },
         error: (error: any) => {
-          console.error('Error loading sub-children for child goal:', error);
           this.loadingChildSubGoals.delete(childGoal.publicId!);
         },
       });
