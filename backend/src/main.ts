@@ -13,10 +13,12 @@ async function bootstrap() {
 
   // Security: Use Helmet to protect against common web vulnerabilities
   app.use(helmet());
+  // Security: Configure CORS with specific origins
+  const corsOrigins = configService.get('CORS_ORIGINS', '*');
+  const origins = corsOrigins === '*' ? '*' : corsOrigins.split(',');
 
-  // Security: Configure CORS with specific options
   app.enableCors({
-    origin: configService.get('CORS_ORIGINS', '*'),
+    origin: origins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: false, // No cookies

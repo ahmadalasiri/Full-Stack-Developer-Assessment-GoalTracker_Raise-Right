@@ -512,24 +512,176 @@ DB_NAME=goaltracker
 JWT_SECRET=your-jwt-secret
 JWT_EXPIRES_IN=24h
 PORT=3001
-CORS_ORIGINS=https://your-domain.com
+CORS_ORIGINS=https://goal-tracker-virid-eight.vercel.app
 
-# Frontend environment.prod.ts
-export const environment = {
-  production: true,
-  apiUrl: 'https://api.your-domain.com/api',
-  // ... other production configs
-};
+# Frontend (.env)
+BASE_API_URL=http://api.goal-tracker.ahmadalasiri.info/api
+ANGULAR_PRODUCTION=true
+```
+
+### Deployment Options
+
+#### Frontend Deployment to Vercel
+
+The frontend is deployed to Vercel at [https://goal-tracker-virid-eight.vercel.app](https://goal-tracker-virid-eight.vercel.app).
+
+1. **Connect your repository to Vercel**:
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Login to Vercel
+vercel login
+
+# Navigate to frontend directory
+cd frontend
+
+# Deploy to Vercel
+vercel
+```
+
+2. **Configure build settings in Vercel dashboard**:
+
+   - Framework Preset: Angular
+   - Build Command: `npm run build`
+   - Output Directory: `dist/frontend/browser`
+   - Install Command: `npm ci`
+
+3. **Set environment variables**:
+
+   - Go to Vercel project settings → Environment Variables
+   - Add `BASE_API_URL=http://api.goal-tracker.ahmadalasiri.info/api`
+   - Add `ANGULAR_PRODUCTION=true`
+
+4. **Configure custom domain** (optional):
+   - In the Vercel dashboard, go to project settings → Domains
+   - Add your custom domain and follow the DNS configuration steps
+
+#### Backend Deployment to Contabo VPS
+
+The backend can be deployed to a Contabo VPS using Docker and Nginx as a reverse proxy:
+
+1. **Set up your Contabo VPS**:
+
+   - Provision a VPS with at least 4GB RAM and 2 vCPUs
+   - Install Docker and Docker Compose
+   - Install Nginx
+
+2. **Configure Nginx as reverse proxy**:
+
+```nginx
+server {
+    listen 80;
+    server_name api.your-domain.com;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+3. **Deploy with Docker Compose**:
+
+```bash
+# Clone repository on Contabo VPS
+git clone <repository-url>
+cd GoalTracker
+
+# Create .env file with production settings
+nano backend/.env
+
+# Build and run only the backend and database
+docker-compose -f docker-compose.yml up -d postgres backend
+```
+
+4. **Set up SSL with Certbot**:
+
+```bash
+# Install Certbot
+apt-get update
+apt-get install certbot python3-certbot-nginx
+
+# Obtain and configure SSL certificate
+certbot --nginx -d api.your-domain.com
+```
+
+5. **Enable automatic backend updates** (optional):
+
+```bash
+# Create update script
+cat > update.sh << 'EOF'
+#!/bin/bash
+cd /path/to/GoalTracker
+git pull
+docker-compose -f docker-compose.yml build backend
+docker-compose -f docker-compose.yml up -d backend
+EOF
+
+# Make executable
+chmod +x update.sh
+
+# Add to crontab to check for updates daily
+(crontab -l ; echo "0 3 * * * /path/to/update.sh >> /var/log/goaltracker-update.log 2>&1") | crontab -
 ```
 
 ### Docker Production Build
 
 ```bash
 # Build optimized images
-docker-compose -f docker-compose.prod.yml build
+docker-compose -f docker-compose.yml build
 
 # Deploy with production configuration
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose -f docker-compose.yml up -d
+```
+
+### CI/CD Integration
+
+**GitHub Actions workflow for automated deployment**:
+
+```yaml
+name: Deploy GoalTracker
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+      - name: Deploy Frontend to Vercel
+        run: |
+          cd frontend
+          vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to Contabo
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            cd /path/to/GoalTracker
+            git pull
+            docker-compose -f docker-compose.yml build backend
+            docker-compose -f docker-compose.yml up -d backend
 ```
 
 ### Recommended Production Enhancements
@@ -537,9 +689,13 @@ docker-compose -f docker-compose.prod.yml up -d
 1. **SSL/TLS**: HTTPS certificates (Let's Encrypt)
 2. **Reverse Proxy**: Nginx for load balancing
 3. **Database**: Managed PostgreSQL service (AWS RDS, etc.)
-4. **Monitoring**: Application and infrastructure monitoring
-5. **Backup**: Automated database backups
-6. **CI/CD**: Automated testing and deployment pipeline
+4. **Monitoring**: Application and infrastructure monitoring (Prometheus/Grafana)
+5. **Backup**: Automated database backups (pgBackRest)
+6. **CI/CD**: Automated testing and deployment pipeline (GitHub Actions)
+7. **Log Management**: Centralized logging (ELK Stack)
+8. **CDN**: Content delivery network for static assets (Cloudflare)
+9. **DDoS Protection**: Cloud-based DDoS mitigation (Cloudflare)
+10. **Horizontal Scaling**: Load balancer with multiple backend instances
 
 ---
 
