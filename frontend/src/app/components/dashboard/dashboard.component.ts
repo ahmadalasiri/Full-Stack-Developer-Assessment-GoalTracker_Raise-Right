@@ -450,8 +450,22 @@ export class DashboardComponent implements OnInit {
       this.loading = true;
       this.goalsService.deleteGoal(id).subscribe({
         next: (response: any) => {
-          if (response.success || response.status === 204) {
+          // Handle successful deletion - check for response being null or having success or status properties
+          if (
+            (response && (response.success || response.status === 204)) ||
+            !response
+          ) {
+            // Filter out the deleted goal from the goals list
             this.goals = this.goals.filter((goal) => goal.id !== id);
+
+            // Also check if this goal exists in any of the childrenGoals collections and remove it
+            for (const parentId in this.childrenGoals) {
+              if (this.childrenGoals[parentId]) {
+                this.childrenGoals[parentId] = this.childrenGoals[
+                  parentId
+                ].filter((goal) => goal.id !== id);
+              }
+            }
 
             // If the deleted goal was the detail goal, clear it
             if (this.detailGoal?.id === id) {
@@ -462,15 +476,29 @@ export class DashboardComponent implements OnInit {
                 this.selectGoal(this.goals[0]);
               }
             }
+
+            // Show success notification
+            this.notificationService.success(
+              'Goal Deleted',
+              'The goal has been successfully deleted.'
+            );
           } else {
             console.error('Failed to delete goal:', response);
             this.error = 'Failed to delete goal';
+            this.notificationService.error(
+              'Deletion Failed',
+              'Failed to delete the goal. Please try again.'
+            );
           }
           this.loading = false;
         },
         error: (error: any) => {
           console.error('Error deleting goal:', error);
           this.error = error.message || 'Failed to delete goal';
+          this.notificationService.error(
+            'Deletion Failed',
+            error.message || 'Failed to delete goal'
+          );
           this.loading = false;
         },
       });
