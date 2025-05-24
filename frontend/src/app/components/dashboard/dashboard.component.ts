@@ -304,17 +304,7 @@ export class DashboardComponent implements OnInit {
     this.showGoalModal = true;
   }
   closeGoalModal(): void {
-    // Check if the form is dirty (has unsaved changes)
-    if (this.goalForm.dirty && this.showGoalModal) {
-      // Ask for confirmation before closing to prevent accidental data loss
-      const confirmClose = confirm(
-        'You have unsaved changes. Are you sure you want to close?'
-      );
-      if (!confirmClose) {
-        return; // Keep the modal open if the user cancels
-      }
-    }
-
+    // No longer showing confirmation dialog
     this.selectedGoal = null;
     this.isEditMode = false;
     this.goalForm.reset();
@@ -803,5 +793,19 @@ export class DashboardComponent implements OnInit {
         this.error = 'Failed to reorder goal. Please try again.';
       },
     });
+  }
+
+  /**
+   * Navigate to home page
+   */
+  navigateToHome(): void {
+    this.router.navigate(['/']);
+  }
+
+  /**
+   * Navigate to public goals page
+   */
+  navigateToPublicGoals(): void {
+    this.router.navigate(['/public']);
   }
 }

@@ -1,6 +1,16 @@
 <div class="container mx-auto p-4">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">My Goals</h1>
+        <div class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold">My Goals</h1>
+            <button (click)="navigateToHome()"
+                class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-md text-sm font-medium">
+                Home
+            </button>
+            <button (click)="navigateToPublicGoals()"
+                class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-md text-sm font-medium">
+                Public Goals
+            </button>
+        </div>
         <div> <button (click)="openGoalModal()"
                 class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center transition-all duration-200 shadow-md hover:shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">

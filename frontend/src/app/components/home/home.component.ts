@@ -39,6 +39,10 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/register']);
   }
 
+  navigateToHome(): void {
+    this.router.navigate(['/']);
+  }
+
   logout(): void {
     this.authService.logout();
     this.isAuthenticated = false;

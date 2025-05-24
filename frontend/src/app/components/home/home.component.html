@@ -3,8 +3,13 @@
     <header class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-gray-900">GoalTracker</h1>
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold text-gray-900 cursor-pointer" (click)="navigateToHome()">GoalTracker
+                    </h1>
+                    <button (click)="navigateToPublicGoals()"
+                        class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        Public Goals
+                    </button>
                 </div>
                 <div class="flex items-center space-x-4" *ngIf="!isAuthenticated">
                     <button (click)="navigateToLogin()"
