@@ -14,7 +14,7 @@ async function bootstrap() {
 
   try {
     console.log('Running test data SQL scripts...');
-    
+
     // First insert the users data
     console.log('Inserting test users...');
     const usersFilePath = path.join(__dirname, 'users-test-data.sql');

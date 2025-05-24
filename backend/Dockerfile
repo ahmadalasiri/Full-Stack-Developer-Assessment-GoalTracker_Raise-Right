@@ -13,6 +13,9 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Add Node.js crypto polyfill for Alpine
+RUN echo "import crypto from 'crypto'" > crypto-polyfill.js
+
 # Build the application
 RUN npm run build
 
@@ -29,7 +32,4 @@ CMD sh -c "echo 'Waiting for PostgreSQL to be ready...' && \
              sleep 2; \
            done && \
            echo 'PostgreSQL is up - executing command' && \
-           npm run start:prod"
-
-# Start the application
-CMD ["npm", "run", "start:prod"]
+           NODE_OPTIONS='--require ./crypto-polyfill.js' npm run start:prod"
