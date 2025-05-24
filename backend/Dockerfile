@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies, including dev dependencies needed for building
+# Install all dependencies, including dev dependencies for TypeORM and NestJS
 RUN npm ci
 
 # Copy source code
@@ -19,15 +19,17 @@ RUN npm run build
 # Install netcat for health checks
 RUN apk add --no-cache netcat-openbsd
 
-# Add entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
 # Expose port
 EXPOSE 3001
 
-# Set the entrypoint
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Start the application with a simple check for database availability first
+CMD sh -c "echo 'Waiting for PostgreSQL to be ready...' && \
+           until nc -z $DB_HOST $DB_PORT; do \
+             echo 'PostgreSQL is unavailable - sleeping'; \
+             sleep 2; \
+           done && \
+           echo 'PostgreSQL is up - executing command' && \
+           npm run start:prod"
 
 # Start the application
 CMD ["npm", "run", "start:prod"]

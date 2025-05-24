@@ -18,8 +18,15 @@ echo "Initializing database..."
 
 # Load seed data after schema is created
 echo "Loading test data..."
-node dist/database/seeds/load-test-data.js || echo "Failed to load test data, continuing anyway..."
+npx ts-node -r tsconfig-paths/register src/database/seeds/load-test-data.ts || echo "Failed to load test data, continuing anyway..."
 
 # Start the application
 echo "Starting application..."
-exec "$@"
+# Check if the JS file exists
+if [ -f "dist/main.js" ]; then
+  echo "Starting from dist/main.js..."
+  exec "$@"
+else
+  echo "dist/main.js not found, starting in development mode..."
+  exec npm run start:dev
+fi
