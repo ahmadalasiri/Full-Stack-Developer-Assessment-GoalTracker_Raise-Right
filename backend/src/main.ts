@@ -12,35 +12,33 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Security: Use Helmet to protect against common web vulnerabilities
-  app.use(helmet()); // Security: Configure CORS with specific origins
-  const corsOrigins = configService.get('CORS_ORIGINS', '*');
-  console.log('CORS Origins from env:', corsOrigins);
+  app.use(helmet());
 
+  // Security: Configure CORS with specific origins
+  const corsOrigins = configService.get('CORS_ORIGINS', '*');
   const origins = corsOrigins === '*' ? '*' : corsOrigins.split(',');
-  console.log('Parsed CORS Origins:', origins);
 
   app.enableCors({
     origin: origins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false, // No cookies
+    credentials: false,
     maxAge: 3600, // Cache preflight requests for 1 hour
   });
-
-  console.log('CORS configuration applied');
 
   // Security: Apply rate limiting to prevent brute force and DDoS attacks
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 1000, // limit each IP to 100 requests per windowMs
+      max: 1000, // limit each IP to 1000 requests per windowMs
       message: 'Too many requests from this IP, please try again later',
       standardHeaders: true,
       legacyHeaders: false,
     }),
   );
 
-  app.use(morgan('dev'));
+  // HTTP request logging
+  app.use(morgan('combined'));
 
   // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
@@ -59,6 +57,13 @@ async function bootstrap() {
 
   const port = configService.get('PORT') || 3001;
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}/api`);
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`🚀 Application is running on: http://localhost:${port}/api`);
+  }
 }
-bootstrap();
+
+bootstrap().catch((error) => {
+  console.error('❌ Error starting the application:', error);
+  process.exit(1);
+});

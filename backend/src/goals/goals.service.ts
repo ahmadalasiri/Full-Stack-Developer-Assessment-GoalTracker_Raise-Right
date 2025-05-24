@@ -2,10 +2,9 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, IsNull } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { Goal } from './goal.entity';
 import { CreateGoalDto } from './dto/create-goal.dto';
@@ -27,23 +26,11 @@ export class GoalsService {
       await this.validateParentGoal(parentId, userId);
     }
 
-    // Find the maximum order value for goals with the same parent
-    const queryBuilder = this.goalsRepository
-      .createQueryBuilder('goal')
-      .select('MAX(goal.order)', 'maxOrder')
-      .where('goal.ownerId = :userId', { userId });
-
-    if (parentId) {
-      queryBuilder.andWhere('goal.parentId = :parentId', { parentId });
-    } else {
-      queryBuilder.andWhere('goal.parentId IS NULL');
-    }
-
-    const { maxOrder } = await queryBuilder.getRawOne();
-    const newOrder = maxOrder !== null ? maxOrder + 1 : 0;
-
     // Generate a public ID if the goal is public
     const publicId = createGoalDto.isPublic ? uuidv4() : undefined;
+
+    // Get the next order value for goals with the same parent
+    const newOrder = await this.getNextOrderValue(userId, parentId);
 
     // Create the goal entity
     const goal = this.goalsRepository.create({
@@ -53,7 +40,6 @@ export class GoalsService {
       order: newOrder,
     } as unknown as Goal);
 
-    // Save and return the goal
     return this.goalsRepository.save(goal);
   }
   async findAll(
@@ -261,5 +247,25 @@ export class GoalsService {
       // Release the query runner
       await queryRunner.release();
     }
+  } /**
+   * Get the next order value for goals with the same parent
+   */
+  private async getNextOrderValue(
+    userId: string,
+    parentId?: string,
+  ): Promise<number> {
+    const queryBuilder = this.goalsRepository
+      .createQueryBuilder('goal')
+      .select('MAX(goal.order)', 'maxOrder')
+      .where('goal.ownerId = :userId', { userId });
+
+    if (parentId) {
+      queryBuilder.andWhere('goal.parentId = :parentId', { parentId });
+    } else {
+      queryBuilder.andWhere('goal.parentId IS NULL');
+    }
+
+    const result = await queryBuilder.getRawOne();
+    return (result.maxOrder || 0) + 1;
   }
 }

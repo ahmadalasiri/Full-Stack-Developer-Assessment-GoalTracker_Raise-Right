@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { PublicGoalsService } from './public-goals.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { ApiResponse } from '../common/responses/api-response';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('public-goals')
 export class PublicGoalsController {
