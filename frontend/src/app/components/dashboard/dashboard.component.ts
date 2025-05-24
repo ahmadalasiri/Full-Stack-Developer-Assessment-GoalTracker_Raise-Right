@@ -296,8 +296,13 @@ export class DashboardComponent implements OnInit {
       }
     }
   }
-
   private updateGoal(formValue: any): void {
+    if (!this.selectedGoal) {
+      console.error('No selected goal for update');
+      this.loading = false;
+      return;
+    }
+
     const updateDto: UpdateGoalDto = {
       title: formValue.title,
       description: formValue.description,
@@ -306,18 +311,17 @@ export class DashboardComponent implements OnInit {
       completed: formValue.completed,
     };
 
-    this.goalsService.updateGoal(this.selectedGoal!.id, updateDto).subscribe({
+    this.goalsService.updateGoal(this.selectedGoal.id, updateDto).subscribe({
       next: (response: GoalResponse) => {
-        if (response.success && response.data) {
-          const index = this.goals.findIndex(
-            (g) => g.id === this.selectedGoal!.id
-          );
+        if (response.success && response.data && this.selectedGoal) {
+          const selectedGoalId = this.selectedGoal.id; // Store the ID before closing modal
+          const index = this.goals.findIndex((g) => g.id === selectedGoalId);
           if (index !== -1) {
             this.goals[index] = response.data;
           }
           this.closeGoalModal();
 
-          if (this.detailGoal?.id === this.selectedGoal!.id) {
+          if (this.detailGoal?.id === selectedGoalId) {
             this.detailGoal = response.data;
           }
 
@@ -459,24 +463,64 @@ export class DashboardComponent implements OnInit {
       });
     }
   }
-
   toggleCompleted(goal: Goal): void {
+    if (!goal || !goal.id) {
+      console.error('Invalid goal passed to toggleCompleted:', goal);
+      return;
+    }
+
     this.loading = true;
     const updateDto: UpdateGoalDto = {
       completed: !goal.completed,
     };
     this.goalsService.updateGoal(goal.id, updateDto).subscribe({
-      next: (response: any) => {
-        if (response) {
-          goal.completed = !goal.completed;
+      next: (response: GoalResponse) => {
+        if (response && response.success && response.data) {
+          const updatedGoal = response.data;
+
+          // Update goal in main goals array
+          const mainGoalIndex = this.goals.findIndex((g) => g.id === goal.id);
+          if (mainGoalIndex !== -1) {
+            this.goals[mainGoalIndex] = updatedGoal;
+          }
+
+          // Update goal in children goals arrays
+          Object.keys(this.childrenGoals).forEach((parentId) => {
+            const childIndex = this.childrenGoals[parentId].findIndex(
+              (g) => g.id === goal.id
+            );
+            if (childIndex !== -1) {
+              this.childrenGoals[parentId][childIndex] = updatedGoal;
+            }
+          });
+
+          // Update detail goal if it's the same goal
+          if (this.detailGoal?.id === goal.id) {
+            this.detailGoal = updatedGoal;
+          }
+
+          this.notificationService.success(
+            'Goal Updated',
+            `Goal ${
+              updatedGoal.completed ? 'completed' : 'marked as incomplete'
+            } successfully.`
+          );
         } else {
           this.error =
             'Failed to update goal completion: Invalid response format';
+          this.notificationService.error(
+            'Update Failed',
+            'Failed to update goal completion: Invalid response format'
+          );
         }
         this.loading = false;
       },
       error: (error: any) => {
         this.error = error.message || 'Failed to update goal';
+        this.notificationService.error(
+          'Update Failed',
+          error.message || 'Failed to update goal'
+        );
         this.loading = false;
       },
     });

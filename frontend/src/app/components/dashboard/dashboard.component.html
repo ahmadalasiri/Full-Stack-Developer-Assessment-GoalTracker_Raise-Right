@@ -203,12 +203,12 @@
                     <p class="whitespace-pre-wrap text-gray-700">{{ detailGoal.description || 'No description provided.'
                         }}</p>
                 </div>
-
                 <div class="flex items-center mt-4 pt-4 border-t border-gray-200">
-                    <input type="checkbox" [checked]="detailGoal.completed" (change)="toggleCompleted(detailGoal)"
+                    <input type="checkbox" [checked]="detailGoal.completed"
+                        (change)="detailGoal && toggleCompleted(detailGoal)"
                         class="h-5 w-5 mr-2 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <span class="text-gray-700">{{ detailGoal.completed ? 'Completed' : 'Mark as complete' }}</span>
-                </div> <!-- Children section -->
+                </div><!-- Children section -->
                 <div class="mt-8">
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-3">
                         <h3 class="font-semibold">Child Goals</h3>
