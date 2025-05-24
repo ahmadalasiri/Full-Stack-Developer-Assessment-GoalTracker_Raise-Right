@@ -1,716 +1,192 @@
 # GoalTracker - Full-Stack Developer Assessment
 
-A modern full-stack web application for hierarchical goal management built for the Raise Right developer assessment. This application allows users to create, manage, and track personal goals with support for nested sub-goals up to 3 levels deep.
+A modern goal management application with hierarchical structure built for the Raise Right assessment. Create, organize, and track personal goals with up to 3 levels of nesting.
+
+## 🔗 Links
+
+- **GitHub**: [https://github.com/ahmadalasiri/Full-Stack-Developer-Assessment-GoalTracker_Raise-Right](https://github.com/ahmadalasiri/Full-Stack-Developer-Assessment-GoalTracker_Raise-Right)
+- **Live Demo**: [https://goal-tracker.ahmadalasiri.info](https://goal-tracker.ahmadalasiri.info)
+- **API**: [http://api.goal-tracker.ahmadalasiri.info/api](http://api.goal-tracker.ahmadalasiri.info/api)
 
 ![Tech Stack](https://img.shields.io/badge/Stack-Angular%2019%20%7C%20NestJS%2011%20%7C%20PostgreSQL%2015-blue)
-![Docker](https://img.shields.io/badge/Docker-Ready-brightgreen)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)
 
-## 🚀 Quick Start
+## 📋 Table of Contents
 
-### Prerequisites
+- [setup instructions](#setup-instructions)
+- [database choice explanation](#database-choice-explanation)
+- [tech stack summary](#tech-stack-summary)
+- [key decisions and trade-offs](#key-decisions-and-trade-offs)
+- [known limitations or pending features](#known-limitations-or-pending-features)
 
-- Docker and Docker Compose installed
-- Node.js 20+ (for local development)
-- Git
+## Setup Instructions
 
 ### Docker Setup (Recommended)
 
 ```bash
-# Clone the repository
-git clone <repository-url>
+git clone https://github.com/ahmadalasiri/Full-Stack-Developer-Assessment-GoalTracker_Raise-Right.git
 cd GoalTracker
-
-# Start the application with Docker
 docker-compose up --build
-
-# The application will be available at:
-# Frontend: http://localhost:4200
-# Backend API: http://localhost:3001/api
-# Database: localhost:5432
 ```
 
-### Local Development Setup
+Access: Frontend at `http://localhost:4200`, API at `http://localhost:3001/api`
+
+### Local Development
 
 ```bash
-# Install dependencies
-cd backend && npm install
-cd ../frontend && npm install
+# Backend
+cd backend && npm install && npm run start:dev
 
-# Start PostgreSQL (using Docker)
-docker-compose up postgres -d
-
-# Start backend
-cd backend
-npm run start:dev
-
-# Start frontend (in another terminal)
-cd frontend
-npm run start
-```
-
-## 📋 Table of Contents
-
-- [Tech Stack & Architecture](#-tech-stack--architecture)
-- [Database Design](#-database-design)
-- [API Documentation](#-api-documentation)
-- [Features](#-features)
-- [Project Structure](#-project-structure)
-- [Development Commands](#-development-commands)
-- [Design Decisions](#-design-decisions)
-- [Known Limitations](#-known-limitations)
-- [Testing](#-testing)
-
-## 🛠 Tech Stack & Architecture
-
-### Frontend
-
-- **Angular 19** - Modern reactive web framework
-- **TypeScript 5.7** - Type-safe development
-- **Tailwind CSS 4.1.7** - Utility-first styling
-- **Angular CDK** - Material Design components
-- **RxJS** - Reactive programming
-
-### Backend
-
-- **NestJS 11** - Progressive Node.js framework
-- **TypeORM 0.3.24** - Object-Relational Mapping
-- **PostgreSQL 15** - Primary database
-- **JWT Authentication** - Secure user sessions
-- **Bcrypt** - Password hashing
-- **Helmet** - Security middleware
-- **Rate Limiting** - API protection
-
-### DevOps & Tools
-
-- **Docker & Docker Compose** - Containerization
-- **Node.js 20** - Runtime environment
-- **TypeScript** - Development language
-- **ESLint & Prettier** - Code quality
-- **Jest** - Testing framework
-
-### Architecture Pattern
-
-- **Monorepo Structure** - Organized codebase
-- **RESTful API** - Standard HTTP methods
-- **Repository Pattern** - Data access layer
-- **Dependency Injection** - Loose coupling
-- **Guards & Interceptors** - Cross-cutting concerns
-
-## 🗄 Database Design
-
-### PostgreSQL Choice Justification
-
-**PostgreSQL** was selected as the primary database for several compelling reasons:
-
-#### Technical Advantages
-
-- **ACID Compliance**: Ensures data consistency for goal hierarchies
-- **JSON Support**: Native support for flexible metadata storage
-- **Advanced Indexing**: Efficient querying of nested goal structures
-- **Referential Integrity**: Strong foreign key constraints for parent-child relationships
-- **Performance**: Excellent performance for complex queries and joins
-
-#### Business Requirements Alignment
-
-- **Hierarchical Data**: PostgreSQL's recursive CTEs handle goal trees efficiently
-- **Data Integrity**: Critical for goal dependencies and user data
-- **Scalability**: Handles growing datasets with proper indexing
-- **ACID Properties**: Essential for maintaining goal state consistency
-
-#### Development Benefits
-
-- **TypeORM Integration**: Excellent TypeScript support and decorators
-- **Rich Ecosystem**: Extensive tooling and community support
-- **Docker Support**: Easy containerization and deployment
-- **Backup & Recovery**: Robust data protection mechanisms
-
-### Database Schema
-
-```sql
--- Users table
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  username VARCHAR(255) UNIQUE NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Goals table with hierarchical structure
-CREATE TABLE goals (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
-  deadline TIMESTAMP,
-  is_public BOOLEAN DEFAULT false,
-  is_completed BOOLEAN DEFAULT false,
-  parent_id UUID REFERENCES goals(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Indexes for performance
-CREATE INDEX idx_goals_user_id ON goals(user_id);
-CREATE INDEX idx_goals_parent_id ON goals(parent_id);
-CREATE INDEX idx_goals_public ON goals(is_public) WHERE is_public = true;
-```
-
-## 🔗 API Documentation
-
-### Authentication Endpoints
-
-```
-POST /api/auth/register    # User registration
-POST /api/auth/login       # User login
-GET  /api/auth/profile     # Get user profile (JWT required)
-```
-
-### Goals Management
-
-```
-GET    /api/goals          # Get user's goals (JWT required)
-POST   /api/goals          # Create new goal (JWT required)
-GET    /api/goals/:id      # Get specific goal (JWT required)
-PUT    /api/goals/:id      # Update goal (JWT required)
-DELETE /api/goals/:id      # Delete goal (JWT required)
-```
-
-### Public Goals
-
-```
-GET    /api/public-goals   # Get all public goals
-GET    /api/public-goals/:id # Get specific public goal
-```
-
-### Request/Response Examples
-
-**Create Goal:**
-
-```json
-POST /api/goals
-{
-  "title": "Learn TypeScript",
-  "description": "Master TypeScript fundamentals",
-  "deadline": "2024-12-31T23:59:59.000Z",
-  "isPublic": false,
-  "parentId": "uuid-of-parent-goal" // optional
-}
-```
-
-**Response:**
-
-```json
-{
-  "id": "generated-uuid",
-  "title": "Learn TypeScript",
-  "description": "Master TypeScript fundamentals",
-  "deadline": "2024-12-31T23:59:59.000Z",
-  "isPublic": false,
-  "isCompleted": false,
-  "userId": "user-uuid",
-  "parentId": "parent-uuid",
-  "children": [],
-  "createdAt": "2024-01-15T10:30:00.000Z",
-  "updatedAt": "2024-01-15T10:30:00.000Z"
-}
-```
-
-## ✨ Features
-
-### Core Functionality
-
-- ✅ **User Authentication** - JWT-based secure login/registration
-- ✅ **Goal Management** - CRUD operations for personal goals
-- ✅ **Hierarchical Goals** - Support for nested sub-goals (3 levels deep)
-- ✅ **Public Goals** - Share goals publicly for community viewing
-- ✅ **Goal Completion** - Mark goals as completed/incomplete
-- ✅ **Deadline Tracking** - Set and monitor goal deadlines
-- ✅ **Responsive Design** - Mobile-friendly interface
-
-### Advanced Features
-
-- ✅ **Real-time Validation** - Form validation with helpful error messages
-- ✅ **Security Features** - Helmet, rate limiting, CORS protection
-- ✅ **Data Integrity** - TypeORM entities with validation decorators
-- ✅ **Error Handling** - Global exception filters and user-friendly messages
-- ✅ **Docker Support** - Full containerization with docker-compose
-- ✅ **Database Seeding** - Sample data generation for testing
-
-### UI/UX Features
-
-- ✅ **Modern Design** - Tailwind CSS with clean, intuitive interface
-- ✅ **Dark/Light Mode** - Theme switching support
-- ✅ **Loading States** - Smooth user experience with loading indicators
-- ✅ **Form Validation** - Real-time validation with helpful messages
-- ✅ **Responsive Layout** - Mobile-first design approach
-
-## 📁 Project Structure
-
-```
-GoalTracker/
-├── backend/                    # NestJS Backend
-│   ├── src/
-│   │   ├── auth/              # Authentication module
-│   │   ├── users/             # User management
-│   │   ├── goals/             # Goals CRUD operations
-│   │   ├── public-goals/      # Public goals module
-│   │   ├── common/            # Shared utilities
-│   │   ├── database/          # Database configuration & seeds
-│   │   └── main.ts            # Application bootstrap
-│   ├── Dockerfile             # Backend container config
-│   └── package.json           # Backend dependencies
-├── frontend/                   # Angular Frontend
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/    # UI components
-│   │   │   ├── services/      # Angular services
-│   │   │   ├── guards/        # Route guards
-│   │   │   ├── models/        # TypeScript interfaces
-│   │   │   └── core/          # Core functionality
-│   │   ├── environments/      # Environment configs
-│   │   └── styles.css         # Global styles
-│   ├── Dockerfile             # Frontend container config
-│   └── package.json           # Frontend dependencies
-├── docker-compose.yml         # Multi-container setup
-└── README.md                  # This file
-```
-
-## 🔧 Development Commands
-
-### Backend Commands
-
-```bash
-cd backend
-
-# Development
-npm run start:dev           # Start with hot reload
-npm run start:debug         # Start with debugger
-npm run build               # Build for production
+# Frontend (new terminal)
+cd frontend && npm install && npm start
 
 # Database
-npm run db:seed             # Seed test data
-npm run migration:generate  # Generate migration
-npm run migration:run       # Run migrations
-
-# Testing & Quality
-npm run test                # Run unit tests
-npm run test:e2e           # Run e2e tests
-npm run lint               # Run ESLint
-npm run format             # Format code with Prettier
+docker-compose up postgres -d
 ```
 
-### Frontend Commands
+**Prerequisites**: Docker, Node.js 20+, Git
 
-```bash
-cd frontend
+## Database Choice Explanation
 
-# Development
-npm run start              # Start dev server (port 4200)
-npm run build              # Build for production
-npm run watch              # Build with file watching
+**PostgreSQL** was chosen as the primary database, and here's why it made sense for this project:
 
-# Testing & Quality
-npm run test               # Run unit tests with Karma
-ng generate component <name>  # Generate new component
-ng generate service <name>    # Generate new service
-```
+### Pros
 
-### Docker Commands
+- **Supports Transactions and ACID:** This is super helpful when reordering goals—like when you drag and drop them. Everything happens safely inside a transaction, so your data stays consistent.
 
-```bash
-# Full application
-docker-compose up --build   # Build and start all services
-docker-compose down         # Stop all services
-docker-compose logs -f      # Follow logs
+- **Automatic Cascade Deletes:** Perfect for our goal hierarchy. If you delete a parent goal, all its child goals get deleted automatically—no worries about leftover orphaned records.
 
-# Individual services
-docker-compose up postgres  # Start only database
-docker-compose up backend   # Start backend + database
-docker-compose up frontend  # Start frontend only
-```
+- **Great for Complex Queries:** It handles our nested goals really well, especially with recursive queries.
 
-## 🎯 Design Decisions
+- **Clear and Structured Schema:** The database schema is well-defined and organized, which makes PostgreSQL a natural fit.
 
-### Architecture Choices
+- **Better at Joins than MongoDB:** Since our goals have parent-child relationships, PostgreSQL’s relational joins make managing these connections way smoother compared to MongoDB.
 
-**1. Monorepo Structure**
+### Cons
 
-- **Decision**: Keep frontend and backend in the same repository
-- **Rationale**: Simplified development, shared types, easier deployment
-- **Trade-off**: Could complicate CI/CD for larger teams
+- **Setup Can Be Tricky:** Compared to NoSQL options, PostgreSQL takes a bit more effort to configure.
 
-**2. TypeORM with Synchronize**
+- **Slower to Develop at First:** From my experience with MongoDB, you can move faster at the start using Mongo—but eventually, you might run into issues that PostgreSQL avoids 🙂
 
-- **Decision**: Use `synchronize: true` for development
-- **Rationale**: Rapid prototyping, automatic schema updates
-- **Trade-off**: Not suitable for production (use migrations instead)
+### Alternatives Considered
 
-**3. JWT Authentication**
+- **MongoDB**: Rejected due to need for relational constraints and ACID transactions for goal hierarchies
+- **MySQL**: PostgreSQL offers better support for complex data types
 
-- **Decision**: Stateless JWT tokens instead of sessions
-- **Rationale**: Scalability, microservices compatibility, mobile-friendly
-- **Trade-off**: Token revocation complexity, larger payload size
+## Tech Stack Summary
 
-**4. Hierarchical Goal Structure**
+### Frontend Stack
 
-- **Decision**: Self-referencing table with `parent_id` foreign key
-- **Rationale**: Simple implementation, unlimited nesting potential
-- **Trade-off**: Complex queries for deep hierarchies (mitigated with 3-level limit)
+- Angular 19
+- TypeScript 5.7
+- Tailwind CSS 4.1.7
 
-### Security Implementations
+### Backend Stack
 
-**1. Password Hashing**
+- NestJS 11
+- TypeORM 0.3.24
+- PostgreSQL 15
 
-- **Implementation**: Bcrypt with salt rounds
-- **Rationale**: Industry standard, resistance to rainbow table attacks
+### DevOps & Development
 
-**2. Rate Limiting**
+- Docker & Docker Compose
+- Nginx
+- Contabo
 
-- **Implementation**: Express rate limiting middleware
-- **Configuration**: 100 requests per 15 minutes per IP
-- **Rationale**: Prevent brute force and DDoS attacks
+## Key Decisions and Trade-offs
 
-**3. CORS Configuration**
+### 1. Monorepo vs Multi-repo Structure
 
-- **Implementation**: Specific origin allowlist in production
-- **Development**: Permissive for localhost development
-- **Rationale**: Prevent cross-origin attacks while enabling development
+**Decision**: Monorepo with frontend and backend together
 
-**4. Input Validation**
+- ✅ **Pros**: Shared types, easier setup, coordinated releases, simplified development workflow
+- ❌ **Cons**: Larger repository size, potential CI/CD complexity for larger teams
 
-- **Implementation**: Class-validator decorators with DTOs
-- **Rationale**: Type-safe validation, automatic sanitization
+### 2. Tailwind CSS vs Component Libraries
 
-### Performance Optimizations
+**Decision**: Tailwind CSS with minimal component library usage
 
-**1. Database Indexing**
+- ✅ **Pros**: Rapid prototyping, smaller bundle size, design consistency, no library lock-in
 
-- **Implementation**: Indexes on foreign keys and frequently queried columns
-- **Rationale**: Faster query execution for goal hierarchies
+## Known Limitations or Pending Features
 
-**2. Lazy Loading**
+### Current Implementation Limitations
 
-- **Implementation**: Optional relation loading in TypeORM
-- **Rationale**: Reduce unnecessary data transfer
+#### Logging and Monitoring
 
-**3. Connection Pooling**
+- **Issue**: No comprehensive logging system or application monitoring
+- **Impact**: Difficult to debug issues in production and track application performance
+- **Solution**: Implement structured logging with Winston/Pino and monitoring with Sentry
 
-- **Implementation**: PostgreSQL connection pooling
-- **Rationale**: Efficient database connection management
+#### Security Enhancements
 
-## ⚠️ Known Limitations
+- **Issue**: Basic security measures, missing advanced protection
+- **Impact**: Potential vulnerabilities in production environment
+- **Solution**: Add rate limiting per user, CSRF protection, comprehensive security headers, input sanitization
 
-### Current Limitations
+#### Documentation
 
-**1. Goal Nesting Depth**
+- **Issue**: Manual API documentation, no interactive documentation
+- **Impact**: Poor developer experience for API consumers
+- **Solution**: Implement Swagger/OpenAPI for automatic interactive API documentation
 
-- **Limitation**: Maximum 3 levels of nesting
-- **Reasoning**: UI complexity and performance considerations
-- **Future**: Could be made configurable
+#### Testing Coverage
 
-**2. Real-time Updates**
+- **Issue**: Limited test suite (~30% coverage)
+- **Impact**: Higher risk of bugs, difficult to refactor safely
+- **Solution**: Comprehensive unit, integration, and E2E testing with Jest and Cypress
 
-- **Limitation**: No WebSocket implementation for real-time goal updates
+#### Real-time Collaboration
+
+- **Issue**: No real-time updates when multiple users edit shared goals
 - **Impact**: Users must refresh to see changes from other sessions
-- **Future**: WebSocket or Server-Sent Events implementation
+- **Solution**: WebSocket implementation
 
-**3. File Attachments**
+#### File Attachments
 
-- **Limitation**: No file upload capability for goals
-- **Impact**: Cannot attach documents or images to goals
-- **Future**: AWS S3 or similar cloud storage integration
+- **Issue**: Cannot attach files, images, or documents to goals
+- **Impact**: Limited goal documentation capabilities
+- **Solution**: AWS S3 or similar cloud storage integration
 
-**4. Search Functionality**
+#### Advanced Search and Filtering
 
-- **Limitation**: No full-text search across goals
-- **Impact**: Limited goal discovery capabilities
-- **Future**: Elasticsearch or PostgreSQL full-text search
+- **Issue**: No full-text search or advanced filtering capabilities
+- **Impact**: Difficult to find specific goals in large datasets
+- **Solution**: Elasticsearch integration or PostgreSQL full-text search
 
-**5. Audit Trail**
+#### JWT Storage in localStorage
 
-- **Limitation**: No change history tracking
-- **Impact**: Cannot see goal modification history
-- **Future**: Event sourcing or audit log implementation
+- **Issue**: Authentication tokens stored in localStorage instead of HTTP-only cookies
+- **Impact**: Vulnerable to XSS attacks that could steal the token
+- **Solution**: Use HTTP-only cookies with appropriate security flags
 
 ### Technical Debt
 
-**1. Database Migrations**
+#### Sentry Integration
 
-- **Current**: Using TypeORM synchronize in development
-- **Production Need**: Proper migration system for schema changes
+- **Current**: No error tracking and performance monitoring
+- **Improvement**: Integrate Sentry for real-time error tracking, performance monitoring, and alerting
 
-**2. Error Handling**
+#### Error Handling
 
-- **Current**: Basic error responses
-- **Enhancement**: More granular error codes and user-friendly messages
-
-**3. Testing Coverage**
-
-- **Current**: Limited test suite
-- **Need**: Comprehensive unit, integration, and e2e tests
-
-**4. API Documentation**
-
-- **Current**: Manual documentation in README
-- **Enhancement**: Swagger/OpenAPI automatic documentation
+- **Current**: Basic error responses and generic messages
+- **Improvement**: Granular error codes, user-friendly messages, retry mechanisms
 
 ### Scalability Considerations
 
-**1. Database Performance**
+#### Database Performance
 
 - **Current**: Single PostgreSQL instance
-- **Future**: Read replicas, connection pooling, query optimization
+- **Bottleneck**: All operations on single database
+- **Solution**: Read replicas, connection pooling, query optimization
 
-**2. Caching Layer**
+#### Application Scaling
 
-- **Current**: No caching implementation
-- **Future**: Redis for session management and frequently accessed data
+- **Current**: Single NestJS instance
+- **Bottleneck**: CPU and memory constraints
+- **Solution**: Horizontal scaling with load balancer
 
-**3. API Rate Limiting**
+#### Session Management
 
-- **Current**: Simple in-memory rate limiting
-- **Future**: Distributed rate limiting with Redis
-
-## 🧪 Testing
-
-### Current Test Setup
-
-```bash
-# Backend tests
-cd backend
-npm run test              # Unit tests
-npm run test:watch        # Watch mode
-npm run test:cov          # Coverage report
-npm run test:e2e          # End-to-end tests
-
-# Frontend tests
-cd frontend
-npm run test              # Unit tests with Karma/Jasmine
-```
-
-### Test Coverage Goals
-
-- **Unit Tests**: Service layer business logic
-- **Integration Tests**: API endpoint testing
-- **E2E Tests**: Complete user workflows
-- **Component Tests**: Angular component behavior
-
-## 🚀 Production Deployment
-
-### Environment Variables
-
-```bash
-# Backend (.env)
-DB_HOST=your-db-host
-DB_PORT=5432
-DB_USERNAME=your-db-user
-DB_PASSWORD=your-db-password
-DB_NAME=goaltracker
-JWT_SECRET=your-jwt-secret
-JWT_EXPIRES_IN=24h
-PORT=3001
-CORS_ORIGINS=https://goal-tracker-virid-eight.vercel.app
-
-# Frontend (.env)
-BASE_API_URL=http://api.goal-tracker.ahmadalasiri.info/api
-ANGULAR_PRODUCTION=true
-```
-
-### Deployment Options
-
-#### Frontend Deployment to Vercel
-
-The frontend is deployed to Vercel at [https://goal-tracker-virid-eight.vercel.app](https://goal-tracker-virid-eight.vercel.app).
-
-1. **Connect your repository to Vercel**:
-
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Login to Vercel
-vercel login
-
-# Navigate to frontend directory
-cd frontend
-
-# Deploy to Vercel
-vercel
-```
-
-2. **Configure build settings in Vercel dashboard**:
-
-   - Framework Preset: Angular
-   - Build Command: `npm run build`
-   - Output Directory: `dist/frontend/browser`
-   - Install Command: `npm ci`
-
-3. **Set environment variables**:
-
-   - Go to Vercel project settings → Environment Variables
-   - Add `BASE_API_URL=http://api.goal-tracker.ahmadalasiri.info/api`
-   - Add `ANGULAR_PRODUCTION=true`
-
-4. **Configure custom domain** (optional):
-   - In the Vercel dashboard, go to project settings → Domains
-   - Add your custom domain and follow the DNS configuration steps
-
-#### Backend Deployment to Contabo VPS
-
-The backend can be deployed to a Contabo VPS using Docker and Nginx as a reverse proxy:
-
-1. **Set up your Contabo VPS**:
-
-   - Provision a VPS with at least 4GB RAM and 2 vCPUs
-   - Install Docker and Docker Compose
-   - Install Nginx
-
-2. **Configure Nginx as reverse proxy**:
-
-```nginx
-server {
-    listen 80;
-    server_name api.your-domain.com;
-
-    location / {
-        proxy_pass http://localhost:3001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-3. **Deploy with Docker Compose**:
-
-```bash
-# Clone repository on Contabo VPS
-git clone <repository-url>
-cd GoalTracker
-
-# Create .env file with production settings
-nano backend/.env
-
-# Build and run only the backend and database
-docker-compose -f docker-compose.yml up -d postgres backend
-```
-
-4. **Set up SSL with Certbot**:
-
-```bash
-# Install Certbot
-apt-get update
-apt-get install certbot python3-certbot-nginx
-
-# Obtain and configure SSL certificate
-certbot --nginx -d api.your-domain.com
-```
-
-5. **Enable automatic backend updates** (optional):
-
-```bash
-# Create update script
-cat > update.sh << 'EOF'
-#!/bin/bash
-cd /path/to/GoalTracker
-git pull
-docker-compose -f docker-compose.yml build backend
-docker-compose -f docker-compose.yml up -d backend
-EOF
-
-# Make executable
-chmod +x update.sh
-
-# Add to crontab to check for updates daily
-(crontab -l ; echo "0 3 * * * /path/to/update.sh >> /var/log/goaltracker-update.log 2>&1") | crontab -
-```
-
-### Docker Production Build
-
-```bash
-# Build optimized images
-docker-compose -f docker-compose.yml build
-
-# Deploy with production configuration
-docker-compose -f docker-compose.yml up -d
-```
-
-### CI/CD Integration
-
-**GitHub Actions workflow for automated deployment**:
-
-```yaml
-name: Deploy GoalTracker
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-      - name: Deploy Frontend to Vercel
-        run: |
-          cd frontend
-          vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
-
-  deploy-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Deploy to Contabo
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: |
-            cd /path/to/GoalTracker
-            git pull
-            docker-compose -f docker-compose.yml build backend
-            docker-compose -f docker-compose.yml up -d backend
-```
-
-### Recommended Production Enhancements
-
-1. **SSL/TLS**: HTTPS certificates (Let's Encrypt)
-2. **Reverse Proxy**: Nginx for load balancing
-3. **Database**: Managed PostgreSQL service (AWS RDS, etc.)
-4. **Monitoring**: Application and infrastructure monitoring (Prometheus/Grafana)
-5. **Backup**: Automated database backups (pgBackRest)
-6. **CI/CD**: Automated testing and deployment pipeline (GitHub Actions)
-7. **Log Management**: Centralized logging (ELK Stack)
-8. **CDN**: Content delivery network for static assets (Cloudflare)
-9. **DDoS Protection**: Cloud-based DDoS mitigation (Cloudflare)
-10. **Horizontal Scaling**: Load balancer with multiple backend instances
-
----
-
-## 👨‍💻 Development Notes
-
-This application was built as part of the Raise Right full-stack developer assessment. The implementation focuses on demonstrating:
-
-- Modern web development practices
-- Clean, maintainable code architecture
-- Security best practices
-- Database design principles
-- Docker containerization
-- Comprehensive documentation
-
-**Development Time**: ~8-10 hours
-**Last Updated**: January 2025
-
-For questions or feedback, please contact the development team.
+- **Current**: JWT tokens in localStorage
+- **Security Risk**: XSS vulnerability, no token revocation
+- **Solution**: Secure HTTP-only cookies or Redis session store
