@@ -15,21 +15,31 @@ export interface RegisterCredentials {
 }
 
 export interface AuthResponse {
-  success: boolean;
-  data: {
+  success?: boolean;
+  data?: {
     token: string;
     user: {
       id: string;
       email: string;
-      name: string;
+      name?: string;
+      username?: string;
     };
+  };
+  // Direct response properties (backend returns these directly)
+  token?: string;
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+    username?: string;
   };
 }
 
 export interface User {
   id: string;
   email: string;
-  name: string;
+  name?: string;
+  username?: string;
 }
 
 @Injectable({
@@ -84,8 +94,8 @@ export class AuthService {
   get isAuthenticated$(): Observable<boolean> {
     return this.currentUser$.pipe(map((user) => user !== null));
   }
-
   private handleAuthResponse(response: AuthResponse): void {
+    // Handle nested structure (success + data pattern)
     if (response.success && response.data) {
       localStorage.setItem(environment.auth.tokenKey, response.data.token);
       localStorage.setItem(
@@ -93,6 +103,15 @@ export class AuthService {
         JSON.stringify(response.data.user)
       );
       this.currentUserSubject.next(response.data.user);
+    }
+    // Handle direct structure (token + user pattern from backend)
+    else if (response.token && response.user) {
+      localStorage.setItem(environment.auth.tokenKey, response.token);
+      localStorage.setItem(
+        environment.auth.userKey,
+        JSON.stringify(response.user)
+      );
+      this.currentUserSubject.next(response.user);
     }
   }
 }

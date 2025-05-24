@@ -38,8 +38,9 @@ export class LoginComponent {
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
           console.log('Login successful:', response);
-          // Ensure we have the token and user data
-          if (response?.data?.token) {
+          // Check for token in either response format
+          const hasToken = response?.data?.token || response?.token;
+          if (hasToken) {
             console.log('Navigating to dashboard...');
             // Navigate to dashboard after login
             this.router.navigate(['/dashboard']);

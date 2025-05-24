@@ -59,10 +59,17 @@ export class RegisterComponent {
       this.error = '';
 
       const { confirmPassword, ...registerData } = this.registerForm.value;
-
       this.authService.register(registerData).subscribe({
-        next: () => {
-          this.router.navigate(['/dashboard']);
+        next: (response) => {
+          // Check for token in either response format
+          const hasToken = response?.data?.token || response?.token;
+          if (hasToken) {
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.error =
+              'Registration failed - authentication token not received';
+            this.loading = false;
+          }
         },
         error: (error) => {
           this.error = error.error?.message || 'Registration failed';
