@@ -18,3 +18,31 @@
 .animate-spin {
     animation: spin 1s linear infinite;
 }
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+
+    /* For smaller screens and tablets */
+    .goal-tree {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 640px) {
+
+    /* For mobile phones */
+    .goal-tree {
+        font-size: 0.85rem;
+    }
+
+    /* Optimize spacing for small screens */
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}
+
+/* Improve scrolling on mobile devices */
+.overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+}

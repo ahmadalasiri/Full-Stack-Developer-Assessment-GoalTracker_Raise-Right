@@ -56,6 +56,7 @@ curl -I -H "Origin: https://goal-tracker-virid-eight.vercel.app" \
 ```
 
 The response should include:
+
 ```
 Access-Control-Allow-Origin: https://goal-tracker-virid-eight.vercel.app
 ```
@@ -68,8 +69,8 @@ If you're still having issues, you might need to ensure your NestJS application 
 
 ```typescript
 // Add this after setting corsOrigins
-console.log('CORS Origins configured as:', corsOrigins);
-console.log('Parsed Origins:', origins);
+console.log("CORS Origins configured as:", corsOrigins);
+console.log("Parsed Origins:", origins);
 ```
 
 2. Restart your server and check the logs:

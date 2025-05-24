@@ -12,10 +12,10 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Security: Use Helmet to protect against common web vulnerabilities
-  app.use(helmet());  // Security: Configure CORS with specific origins
+  app.use(helmet()); // Security: Configure CORS with specific origins
   const corsOrigins = configService.get('CORS_ORIGINS', '*');
   console.log('CORS Origins from env:', corsOrigins);
-  
+
   const origins = corsOrigins === '*' ? '*' : corsOrigins.split(',');
   console.log('Parsed CORS Origins:', origins);
 
@@ -26,7 +26,7 @@ async function bootstrap() {
     credentials: false, // No cookies
     maxAge: 3600, // Cache preflight requests for 1 hour
   });
-  
+
   console.log('CORS configuration applied');
 
   // Security: Apply rate limiting to prevent brute force and DDoS attacks

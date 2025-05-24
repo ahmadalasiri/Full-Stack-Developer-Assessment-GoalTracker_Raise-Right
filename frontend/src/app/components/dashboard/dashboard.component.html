@@ -1,18 +1,21 @@
-<div class="container mx-auto p-4">
-    <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center space-x-4">
+<div class="container mx-auto px-4 sm:px-6">
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between">
             <h1 class="text-2xl font-bold">My Goals</h1>
-            <button (click)="navigateToHome()"
-                class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-md text-sm font-medium">
-                Home
-            </button>
-            <button (click)="navigateToPublicGoals()"
-                class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-md text-sm font-medium">
-                Public Goals
-            </button>
+            <div class="flex gap-2">
+                <button (click)="navigateToHome()"
+                    class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-md text-sm font-medium">
+                    Home
+                </button>
+                <button (click)="navigateToPublicGoals()"
+                    class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-md text-sm font-medium">
+                    Public Goals
+                </button>
+            </div>
         </div>
-        <div> <button (click)="openGoalModal()"
-                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center transition-all duration-200 shadow-md hover:shadow-lg">
+        <div class="w-full sm:w-auto mt-3 sm:mt-0">
+            <button (click)="openGoalModal()"
+                class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center transition-all duration-200 shadow-md hover:shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd"
                         d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
@@ -32,9 +35,10 @@
     <div *ngIf="loading" class="flex justify-center my-4">
         <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
     </div> <!-- Goal Tree and Details View -->
-    <div *ngIf="goals.length > 0; else noGoals" class="flex gap-6"> <!-- Goal Tree (Left Side) -->
-        <div class="w-1/3 bg-white shadow-md rounded-lg p-4 h-[600px] overflow-y-auto" #rootGoalsContainer
-            (scroll)="onRootGoalsScroll($event)">
+    <div *ngIf="goals.length > 0; else noGoals" class="flex flex-col lg:flex-row gap-6">
+        <!-- Goal Tree (Left Side) -->
+        <div class="w-full lg:w-1/3 bg-white shadow-md rounded-lg p-4 h-[400px] lg:h-[600px] overflow-y-auto"
+            #rootGoalsContainer (scroll)="onRootGoalsScroll($event)">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold">Goal Tree</h2>
                 <!-- Loading indicator for infinite scroll -->
@@ -164,9 +168,9 @@
         </div>
 
         <!-- Goal Details (Right Side) -->
-        <div class="w-2/3 bg-white shadow-md rounded-lg">
-            <div *ngIf="detailGoal; else selectGoalMessage" class="p-6">
-                <div class="flex justify-between items-start mb-4">
+        <div class="w-full lg:w-2/3 bg-white shadow-md rounded-lg mt-6 lg:mt-0">
+            <div *ngIf="detailGoal; else selectGoalMessage" class="p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start mb-4 gap-3">
                     <div>
                         <h2 class="text-xl font-bold" [ngClass]="{'line-through': detailGoal.completed}">
                             {{ detailGoal.title }}
@@ -176,15 +180,15 @@
                             <span>{{ detailGoal.isPublic ? 'Public' : 'Private' }}</span>
                         </div>
                     </div>
-                    <div>
-                        <button (click)="openGoalModal(detailGoal)" class="text-blue-600 hover:text-blue-800 mr-2">
+                    <div class="flex space-x-2 mt-2 sm:mt-0">
+                        <button (click)="openGoalModal(detailGoal)" class="text-blue-600 hover:text-blue-800 p-1">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
                         </button>
-                        <button (click)="deleteGoal(detailGoal.id)" class="text-red-600 hover:text-red-800">
+                        <button (click)="deleteGoal(detailGoal.id)" class="text-red-600 hover:text-red-800 p-1">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -206,7 +210,7 @@
                     <span class="text-gray-700">{{ detailGoal.completed ? 'Completed' : 'Mark as complete' }}</span>
                 </div> <!-- Children section -->
                 <div class="mt-8">
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-3">
                         <h3 class="font-semibold">Child Goals</h3>
                         <div class="flex items-center">
                             <!-- Loading indicator for infinite scroll of child goals -->
@@ -231,7 +235,7 @@
                         </div>
                     </div>
                     <div *ngIf="childrenGoals[detailGoal.id]?.length; else noChildGoals"
-                        class="border rounded-md divide-y h-[300px] overflow-y-auto" #childGoalsContainer
+                        class="border rounded-md divide-y h-[200px] sm:h-[300px] overflow-y-auto" #childGoalsContainer
                         (scroll)="onChildGoalsScroll($event)">
                         <div *ngFor="let child of childrenGoals[detailGoal.id]" class="p-3 hover:bg-gray-50">
                             <div class="flex items-center justify-between">
@@ -326,17 +330,18 @@
 </ng-template>
 
 <!-- Goal Modal (Create/Edit) -->
-<div *ngIf="showGoalModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50"
+<div *ngIf="showGoalModal"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 px-4 py-6 overflow-y-auto"
     (click)="closeGoalModal()">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" (click)="$event.stopPropagation()">
-        <div class="p-6 relative">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-auto my-auto" (click)="$event.stopPropagation()">
+        <div class="p-4 sm:p-6 relative">
             <button (click)="closeGoalModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4 pr-8">
                 {{ isEditMode ? 'Edit Goal' : 'Create New Goal' }}
             </h3>
             <form [formGroup]="goalForm" (ngSubmit)="saveGoal()">
@@ -405,13 +410,13 @@
 
                 <!-- Parent Goal field is hidden but still in the form for when creating child goals -->
                 <input type="hidden" formControlName="parentId">
-                <div class="flex items-center justify-end mt-6">
+                <div class="flex flex-col sm:flex-row items-center justify-end mt-6 gap-3">
                     <button type="button" (click)="closeGoalModal()"
-                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md mr-3 border border-gray-300 transition-colors duration-200">
+                        class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md border border-gray-300 transition-colors duration-200">
                         Cancel
                     </button>
                     <button type="submit" [disabled]="goalForm.invalid || loading"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow flex items-center">
+                        class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center">
                         <span *ngIf="loading" class="mr-2">
                             <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
                                 viewBox="0 0 24 24">
