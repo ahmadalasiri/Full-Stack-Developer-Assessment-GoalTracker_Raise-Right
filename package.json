@@ -2,7 +2,7 @@
   "name": "goaltracker-root",
   "version": "1.0.0",
   "scripts": {
-    "vercel-build": "cd frontend && npm install && npm run vercel-build"
+    "vercel-build": "cd frontend && npm install && node scripts/generate-env.js && npm run build"
   },
   "private": true
 }
