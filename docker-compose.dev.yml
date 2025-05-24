@@ -1,0 +1,76 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: goaltracker-postgres-dev
+    environment:
+      POSTGRES_DB: goaltracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - goaltracker-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API (Development)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: goaltracker-backend-dev
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres123
+      - DB_NAME=goaltracker
+      - JWT_SECRET=dev_jwt_secret_key
+      - JWT_EXPIRES_IN=30d
+      - PORT=3001
+      - CORS_ORIGINS=http://localhost:4200
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - goaltracker-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  # Frontend Application (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: goaltracker-frontend-dev
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    networks:
+      - goaltracker-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+volumes:
+  postgres_dev_data:
+    driver: local
+
+networks:
+  goaltracker-network:
+    driver: bridge
