@@ -1,5 +1,4 @@
-services:
-  # PostgreSQL Database
+services: # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: goaltracker-postgres
@@ -11,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/src/database/seeds:/docker-entrypoint-initdb.d
+      # Removed seed data auto-loading - will handle this in backend initialization
     networks:
       - goaltracker-network
     healthcheck:

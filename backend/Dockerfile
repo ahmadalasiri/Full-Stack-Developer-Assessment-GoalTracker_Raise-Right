@@ -16,8 +16,18 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Install netcat for health checks
+RUN apk add --no-cache netcat-openbsd
+
+# Add entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Expose port
 EXPOSE 3001
+
+# Set the entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Start the application
 CMD ["npm", "run", "start:prod"]
