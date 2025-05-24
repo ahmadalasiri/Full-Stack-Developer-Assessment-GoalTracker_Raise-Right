@@ -473,15 +473,20 @@ export class DashboardComponent implements OnInit {
     const updateDto: UpdateGoalDto = {
       completed: !goal.completed,
     };
+
     this.goalsService.updateGoal(goal.id, updateDto).subscribe({
       next: (response: GoalResponse) => {
         if (response && response.success && response.data) {
           const updatedGoal = response.data;
 
+          // Merge the updated properties with the original goal to preserve all data
+          const mergedGoal = { ...goal, ...updatedGoal };
+          console.log('Merged goal:', mergedGoal);
+
           // Update goal in main goals array
           const mainGoalIndex = this.goals.findIndex((g) => g.id === goal.id);
           if (mainGoalIndex !== -1) {
-            this.goals[mainGoalIndex] = updatedGoal;
+            this.goals[mainGoalIndex] = mergedGoal;
           }
 
           // Update goal in children goals arrays
@@ -490,19 +495,18 @@ export class DashboardComponent implements OnInit {
               (g) => g.id === goal.id
             );
             if (childIndex !== -1) {
-              this.childrenGoals[parentId][childIndex] = updatedGoal;
+              this.childrenGoals[parentId][childIndex] = mergedGoal;
             }
           });
 
           // Update detail goal if it's the same goal
           if (this.detailGoal?.id === goal.id) {
-            this.detailGoal = updatedGoal;
+            this.detailGoal = mergedGoal;
           }
-
           this.notificationService.success(
             'Goal Updated',
             `Goal ${
-              updatedGoal.completed ? 'completed' : 'marked as incomplete'
+              mergedGoal.completed ? 'completed' : 'marked as incomplete'
             } successfully.`
           );
         } else {
