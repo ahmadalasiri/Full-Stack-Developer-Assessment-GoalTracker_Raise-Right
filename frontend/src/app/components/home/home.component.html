@@ -16,10 +16,22 @@
                         Sign Up
                     </button>
                 </div>
-                <div *ngIf="isAuthenticated">
+                <div *ngIf="isAuthenticated" class="flex space-x-3">
                     <button (click)="navigateToDashboard()"
                         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
                         Go to Dashboard
+                    </button>
+                    <button (click)="logout()"
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-5-5H3zm6 5a1 1 0 112 0v4a1 1 0 11-2 0V8z"
+                                clip-rule="evenodd" />
+                            <path
+                                d="M11 3.5a.5.5 0 01.5-.5h4a.5.5 0 01.5.5v4a.5.5 0 01-1 0V4.707l-3.646 3.647a.5.5 0 01-.708-.708L14.293 4H11.5a.5.5 0 01-.5-.5z" />
+                        </svg>
+                        Logout
                     </button>
                 </div>
             </div>
