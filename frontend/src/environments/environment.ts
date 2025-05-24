@@ -42,40 +42,21 @@ export const environment = {
   version: getEnvVar('ANGULAR_APP_VERSION', '1.0.0'),
   features: {
     enableLogging: getEnvVar('ANGULAR_ENABLE_LOGGING', true),
-    enableAnalytics: getEnvVar('ANGULAR_ENABLE_ANALYTICS', false),
-    enableDebug: getEnvVar('ANGULAR_ENABLE_DEBUG', true),
-    mockApi: getEnvVar('ANGULAR_MOCK_API', false),
     publicGoals: getEnvVar('ANGULAR_FEATURE_PUBLIC_GOALS', true),
-    goalCategories: getEnvVar('ANGULAR_FEATURE_GOAL_CATEGORIES', true),
-    notifications: getEnvVar('ANGULAR_FEATURE_NOTIFICATIONS', false),
-    darkMode: getEnvVar('ANGULAR_FEATURE_DARK_MODE', true),
   },
   pagination: {
-    defaultPageSize: getEnvVar('ANGULAR_DEFAULT_PAGE_SIZE', 10),
+    defaultPageSize: getEnvVar('ANGULAR_DEFAULT_PAGE_SIZE', 20),
     maxPageSize: getEnvVar('ANGULAR_MAX_PAGE_SIZE', 100),
   },
   auth: {
     tokenKey: getEnvVar('ANGULAR_TOKEN_KEY', 'goaltracker_token'),
     userKey: getEnvVar('ANGULAR_USER_KEY', 'goaltracker_user'),
-    sessionTimeout: getEnvVar('ANGULAR_SESSION_TIMEOUT', 86400000), // 24 hours in milliseconds
   },
   goals: {
     maxNestingDepth: getEnvVar('ANGULAR_MAX_NESTING_DEPTH', 3),
     maxChildrenLimit: getEnvVar('ANGULAR_MAX_CHILDREN_LIMIT', 10),
   },
   ui: {
-    debounceTime: getEnvVar('ANGULAR_DEBOUNCE_TIME', 300),
-    animationDuration: getEnvVar('ANGULAR_ANIMATION_DURATION', 200),
     toastDuration: getEnvVar('ANGULAR_TOAST_DURATION', 3000),
-    maxFileSize: getEnvVar('ANGULAR_MAX_FILE_SIZE', 5 * 1024 * 1024), // 5MB
-    supportedImageTypes: getEnvVar(
-      'ANGULAR_SUPPORTED_IMAGE_TYPES',
-      'image/jpeg,image/png,image/gif'
-    ).split(','),
-  },
-  logging: {
-    level: getEnvVar('ANGULAR_LOG_LEVEL', 'info'),
-    enableConsole: getEnvVar('ANGULAR_ENABLE_LOGGING', true),
-    enableRemote: false,
   },
 };
