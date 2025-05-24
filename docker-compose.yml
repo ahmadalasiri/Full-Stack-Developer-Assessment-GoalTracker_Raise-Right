@@ -26,7 +26,6 @@ services: # PostgreSQL Database
     container_name: goaltracker-backend
     environment:
       - NODE_ENV=production
-      - NODE_OPTIONS=--experimental-crypto
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USERNAME=postgres
