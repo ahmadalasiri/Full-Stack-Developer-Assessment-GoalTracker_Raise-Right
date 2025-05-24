@@ -1,32 +1,20 @@
-import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-} from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { inject } from '@angular/core';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { LoadingService } from '../services/loading.service';
 
-@Injectable()
-export class LoadingInterceptor implements HttpInterceptor {
-  constructor(private loadingService: LoadingService) {}
+export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
+  const loadingService = inject(LoadingService);
 
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
-    // Skip loading for certain requests
-    if (req.headers.has('skip-loading')) {
-      const newReq = req.clone({
-        headers: req.headers.delete('skip-loading'),
-      });
-      return next.handle(newReq);
-    }
-
-    this.loadingService.show();
-
-    return next.handle(req).pipe(finalize(() => this.loadingService.hide()));
+  // Skip loading for certain requests
+  if (req.headers.has('skip-loading')) {
+    const newReq = req.clone({
+      headers: req.headers.delete('skip-loading'),
+    });
+    return next(newReq);
   }
-}
+
+  loadingService.show();
+
+  return next(req).pipe(finalize(() => loadingService.hide()));
+};

@@ -20,6 +20,7 @@ import {
 } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -62,12 +63,12 @@ export class DashboardComponent implements OnInit {
 
   @ViewChild('rootGoalsContainer') rootGoalsContainer: ElementRef | undefined;
   @ViewChild('childGoalsContainer') childGoalsContainer: ElementRef | undefined;
-
   constructor(
     private goalsService: GoalsService,
     private authService: AuthService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {
     this.goalForm = this.createGoalForm();
   }
@@ -344,17 +345,31 @@ export class DashboardComponent implements OnInit {
                   this.detailGoal = response.data;
                 }
 
+                // Show success notification
+                this.notificationService.success(
+                  'Goal Updated',
+                  'Your goal has been successfully updated.'
+                );
+
                 // Reload goals to ensure proper order
                 this.loadGoals(this.currentPage);
               } else {
                 console.error('Invalid response format:', response);
                 this.error = 'Failed to update goal: Invalid response format';
+                this.notificationService.error(
+                  'Update Failed',
+                  'Failed to update goal: Invalid response format'
+                );
               }
               this.loading = false;
             },
             error: (error: any) => {
               console.error('Error updating goal:', error);
               this.error = error.message || 'Failed to update goal';
+              this.notificationService.error(
+                'Update Failed',
+                error.message || 'Failed to update goal'
+              );
               this.loading = false;
             },
           });
@@ -376,6 +391,10 @@ export class DashboardComponent implements OnInit {
                 this.goals.push(response.data);
                 // Select the newly created goal
                 this.selectGoal(response.data);
+                this.notificationService.success(
+                  'Goal Created',
+                  'Your new root goal has been successfully created.'
+                );
               } else {
                 // If it's a child goal, refresh the parent's children
                 if (this.expandedGoals.has(formValue.parentId)) {
@@ -394,6 +413,10 @@ export class DashboardComponent implements OnInit {
                     this.loadChildGoals(formValue.parentId);
                   }
                 }
+                this.notificationService.success(
+                  'Sub-Goal Created',
+                  'Your new sub-goal has been successfully created.'
+                );
               }
 
               this.closeGoalModal();
@@ -402,12 +425,20 @@ export class DashboardComponent implements OnInit {
             } else {
               console.error('Invalid response format:', response);
               this.error = 'Failed to create goal: Invalid response format';
+              this.notificationService.error(
+                'Creation Failed',
+                'Failed to create goal: Invalid response format'
+              );
             }
             this.loading = false;
           },
           error: (error: any) => {
             console.error('Error creating goal:', error);
             this.error = error.message || 'Failed to create goal';
+            this.notificationService.error(
+              'Creation Failed',
+              error.message || 'Failed to create goal'
+            );
             this.loading = false;
           },
         });
