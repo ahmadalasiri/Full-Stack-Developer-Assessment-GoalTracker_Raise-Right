@@ -37,7 +37,10 @@ const getEnvVar = (
 
 export const environment = {
   production: getEnvVar('ANGULAR_PRODUCTION', false),
-  apiUrl: getEnvVar('BASE_API_URL', 'http://localhost:3001/api'),
+  apiUrl: getEnvVar(
+    'BASE_API_URL',
+    'https://api.goal-tracker.ahmadalasiri.info/api'
+  ),
   appName: getEnvVar('ANGULAR_APP_NAME', 'GoalTracker'),
   version: getEnvVar('ANGULAR_APP_VERSION', '1.0.0'),
   features: {
