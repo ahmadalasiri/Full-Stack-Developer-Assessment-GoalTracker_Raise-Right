@@ -18,6 +18,7 @@ import { PublicGoalsModule } from './public-goals/public-goals.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
+        name: 'default',
         host: configService.get('DB_HOST'),
         port: configService.get('DB_PORT'),
         username: configService.get('DB_USERNAME'),

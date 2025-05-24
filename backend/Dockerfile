@@ -1,5 +1,5 @@
-# Use Node.js 18 Alpine for smaller image size
-FROM node:18-alpine
+# Use Node.js 20 for better crypto module support
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -12,9 +12,6 @@ RUN npm ci
 
 # Copy source code
 COPY . .
-
-# Add Node.js crypto polyfill for Alpine
-RUN echo "import crypto from 'crypto'" > crypto-polyfill.js
 
 # Build the application
 RUN npm run build
@@ -32,4 +29,4 @@ CMD sh -c "echo 'Waiting for PostgreSQL to be ready...' && \
              sleep 2; \
            done && \
            echo 'PostgreSQL is up - executing command' && \
-           NODE_OPTIONS='--require ./crypto-polyfill.js' npm run start:prod"
+           npm run start:prod"
