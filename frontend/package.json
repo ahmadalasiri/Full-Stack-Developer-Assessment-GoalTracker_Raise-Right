@@ -8,7 +8,6 @@
     "prebuild": "node scripts/generate-env.js",
     "build": "ng build --configuration production",
     "build:dev": "ng build",
-    "vercel-build": "node scripts/generate-env.js && ng build --configuration production",
     "watch": "node scripts/generate-env.js && ng build --watch --configuration development",
     "test": "ng test"
   },
