@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-register',
@@ -20,11 +21,11 @@ export class RegisterComponent {
   registerForm: FormGroup;
   loading = false;
   error = '';
-
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {
     this.registerForm = this.fb.group(
       {
@@ -64,15 +65,27 @@ export class RegisterComponent {
           // Check for token in either response format
           const hasToken = response?.data?.token || response?.token;
           if (hasToken) {
+            this.notificationService.success(
+              'Registration Successful',
+              'Welcome to GoalTracker! Your account has been created successfully.'
+            );
             this.router.navigate(['/dashboard']);
           } else {
             this.error =
               'Registration failed - authentication token not received';
+            this.notificationService.error(
+              'Registration Failed',
+              'Registration failed - authentication token not received'
+            );
             this.loading = false;
           }
         },
         error: (error) => {
           this.error = error.error?.message || 'Registration failed';
+          this.notificationService.error(
+            'Registration Failed',
+            error.error?.message || 'Registration failed. Please try again.'
+          );
           this.loading = false;
         },
       });

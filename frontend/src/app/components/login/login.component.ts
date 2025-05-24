@@ -43,17 +43,30 @@ export class LoginComponent {
           const hasToken = response?.data?.token || response?.token;
           if (hasToken) {
             console.log('Navigating to dashboard...');
+            this.notificationService.success(
+              'Login Successful',
+              'Welcome back! You have been successfully logged in.'
+            );
             // Navigate to dashboard after login
             this.router.navigate(['/dashboard']);
           } else {
             console.error('Missing token in response');
             this.error = 'Authentication failed - missing token';
+            this.notificationService.error(
+              'Login Failed',
+              'Authentication failed - missing token'
+            );
             this.loading = false;
           }
         },
         error: (error) => {
           console.error('Login error:', error);
           this.error = error.error?.message || 'Login failed';
+          this.notificationService.error(
+            'Login Failed',
+            error.error?.message ||
+              'Login failed. Please check your credentials.'
+          );
           this.loading = false;
         },
         complete: () => {

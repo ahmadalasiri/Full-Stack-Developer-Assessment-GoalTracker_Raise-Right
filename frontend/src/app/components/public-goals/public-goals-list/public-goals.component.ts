@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { GoalsService, GoalsResponse } from '../../../services/goals.service';
 import { Goal } from '../../../models/goal.model';
 import { AuthService } from '../../../services/auth.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-public-goals',
@@ -21,11 +22,11 @@ export class PublicGoalsComponent implements OnInit {
   pageSize = 100;
   loadingMore = false;
   allGoalsLoaded = false;
-
   constructor(
     private goalsService: GoalsService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -78,6 +79,10 @@ export class PublicGoalsComponent implements OnInit {
       error: (error: any) => {
         console.error('Error loading public goals:', error);
         this.error = error.message || 'Failed to load public goals';
+        this.notificationService.error(
+          'Loading Failed',
+          'Failed to load public goals. Please try again.'
+        );
         this.loading = false;
         this.loadingMore = false;
       },
