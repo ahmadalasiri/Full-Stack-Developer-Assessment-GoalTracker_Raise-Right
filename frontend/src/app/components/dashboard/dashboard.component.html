@@ -34,11 +34,21 @@
                 </div>
             </div>
             <div class="goal-tree">
-                <ul class="space-y-2">
-                    <li *ngFor="let goal of goals" class="ml-1"> <!-- Root goal -->
+                <!-- Root Goals with Drag and Drop -->
+                <div cdkDropList (cdkDropListDropped)="onGoalDrop($event)" class="space-y-2">
+                    <div *ngFor="let goal of goals" cdkDrag class="ml-1">
+                        <!-- Root goal -->
                         <div [ngClass]="{'bg-blue-50 font-semibold': detailGoal?.id === goal.id}"
                             class="flex items-center py-2 cursor-pointer hover:bg-gray-50 rounded px-2 border-l-2 border-transparent hover:border-blue-400 group"
                             [class.border-blue-500]="detailGoal?.id === goal.id" (click)="selectGoal(goal)">
+                            <!-- Drag handle -->
+                            <div cdkDragHandle class="mr-2 cursor-move text-gray-400 hover:text-gray-600">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path
+                                        d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z">
+                                    </path>
+                                </svg>
+                            </div>
                             <span *ngIf="childrenGoals[goal.id] && childrenGoals[goal.id].length > 0"
                                 class="mr-2 w-4 h-4 flex items-center justify-center text-sm text-gray-600"
                                 (click)="$event.stopPropagation(); toggleGoalExpansion(goal.id)">
@@ -46,41 +56,90 @@
                                 <span *ngIf="isGoalExpanded(goal.id)">▼</span>
                             </span>
                             <span *ngIf="!childrenGoals[goal.id] || childrenGoals[goal.id].length === 0"
-                                class="mr-2 w-4"></span> <span class="text-gray-800 flex-1">{{ goal.title }}</span>
-                        </div><!-- Child goals -->
-                        <ul *ngIf="isGoalExpanded(goal.id) && childrenGoals[goal.id]"
-                            class="ml-6 mt-1 space-y-1 border-l border-gray-200 pl-2">
-                            <li *ngFor="let child of childrenGoals[goal.id]">
-                                <div [ngClass]="{'bg-blue-50 font-semibold': detailGoal?.id === child.id}"
-                                    class="flex items-center py-1 cursor-pointer hover:bg-gray-50 rounded px-1 border-l-2 border-transparent hover:border-blue-400 group"
-                                    [class.border-blue-500]="detailGoal?.id === child.id" (click)="selectGoal(child)">
-                                    <span *ngIf="childrenGoals[child.id] && childrenGoals[child.id].length > 0"
-                                        class="mr-2 w-3 h-3 flex items-center justify-center text-xs text-gray-600"
-                                        (click)="$event.stopPropagation(); toggleGoalExpansion(child.id)">
-                                        <span *ngIf="!isGoalExpanded(child.id)">►</span>
-                                        <span *ngIf="isGoalExpanded(child.id)">▼</span>
-                                    </span>
-                                    <span *ngIf="!childrenGoals[child.id] || childrenGoals[child.id].length === 0"
-                                        class="mr-2 w-3"></span> <span class="text-gray-600 text-sm flex-1">{{
-                                        child.title }}</span>
+                                class="mr-2 w-4"></span>
+                            <div class="flex-1">
+                                <div class="text-gray-800" [ngClass]="{'line-through': goal.completed}">{{ goal.title }}
                                 </div>
-                                <!-- Sub-child goals (grandchildren) -->
-                                <ul *ngIf="isGoalExpanded(child.id) && childrenGoals[child.id]"
-                                    class="ml-5 mt-1 space-y-1 border-l border-gray-300 pl-2">
-                                    <li *ngFor="let subChild of childrenGoals[child.id]">
-                                        <div [ngClass]="{'bg-blue-50 font-semibold': detailGoal?.id === subChild.id}"
-                                            class="flex items-center py-1 cursor-pointer hover:bg-gray-50 rounded px-1 border-l-2 border-transparent hover:border-blue-400"
-                                            [class.border-blue-500]="detailGoal?.id === subChild.id"
-                                            (click)="selectGoal(subChild)">
-                                            <span class="w-3 mr-2"></span>
-                                            <span class="text-gray-500 text-xs">{{ subChild.title }}</span>
+                                <div class="flex items-center text-xs mt-1 space-x-2">
+                                    <span [ngClass]="getDeadlineColorClass(goal.deadline)">
+                                        {{ goal.deadline | date:'shortDate' }}
+                                    </span>
+                                    <span [ngClass]="getGoalStatusColorClass(goal)">
+                                        {{ getGoalStatus(goal) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Child goals with Drag and Drop -->
+                        <div *ngIf="isGoalExpanded(goal.id) && childrenGoals[goal.id]"
+                            class="ml-6 mt-1 border-l border-gray-200 pl-2">
+                            <div cdkDropList (cdkDropListDropped)="onGoalDrop($event, goal.id)" class="space-y-1">
+                                <div *ngFor="let child of childrenGoals[goal.id]" cdkDrag>
+                                    <div [ngClass]="{'bg-blue-50 font-semibold': detailGoal?.id === child.id}"
+                                        class="flex items-center py-1 cursor-pointer hover:bg-gray-50 rounded px-1 border-l-2 border-transparent hover:border-blue-400 group"
+                                        [class.border-blue-500]="detailGoal?.id === child.id"
+                                        (click)="selectGoal(child)">
+                                        <!-- Drag handle -->
+                                        <div cdkDragHandle class="mr-2 cursor-move text-gray-400 hover:text-gray-600">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z">
+                                                </path>
+                                            </svg>
                                         </div>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
+                                        <span *ngIf="childrenGoals[child.id] && childrenGoals[child.id].length > 0"
+                                            class="mr-2 w-3 h-3 flex items-center justify-center text-xs text-gray-600"
+                                            (click)="$event.stopPropagation(); toggleGoalExpansion(child.id)">
+                                            <span *ngIf="!isGoalExpanded(child.id)">►</span>
+                                            <span *ngIf="isGoalExpanded(child.id)">▼</span>
+                                        </span>
+                                        <span *ngIf="!childrenGoals[child.id] || childrenGoals[child.id].length === 0"
+                                            class="mr-2 w-3"></span>
+                                        <div class="flex-1">
+                                            <div class="text-gray-600 text-sm"
+                                                [ngClass]="{'line-through': child.completed}">{{ child.title }}</div>
+                                            <div class="flex items-center text-xs mt-1 space-x-2">
+                                                <span [ngClass]="getDeadlineColorClass(child.deadline)">
+                                                    {{ child.deadline | date:'shortDate' }}
+                                                </span>
+                                                <span [ngClass]="getGoalStatusColorClass(child)">
+                                                    {{ getGoalStatus(child) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sub-child goals (grandchildren) - No drag and drop for third level -->
+                                    <div *ngIf="isGoalExpanded(child.id) && childrenGoals[child.id]"
+                                        class="ml-5 mt-1 space-y-1 border-l border-gray-300 pl-2">
+                                        <div *ngFor="let subChild of childrenGoals[child.id]">
+                                            <div [ngClass]="{'bg-blue-50 font-semibold': detailGoal?.id === subChild.id}"
+                                                class="flex items-center py-1 cursor-pointer hover:bg-gray-50 rounded px-1 border-l-2 border-transparent hover:border-blue-400"
+                                                [class.border-blue-500]="detailGoal?.id === subChild.id"
+                                                (click)="selectGoal(subChild)">
+                                                <span class="w-3 mr-2"></span>
+                                                <div class="flex-1">
+                                                    <div class="text-gray-500 text-xs"
+                                                        [ngClass]="{'line-through': subChild.completed}">{{
+                                                        subChild.title }}</div>
+                                                    <div class="flex items-center text-xs mt-1 space-x-2">
+                                                        <span [ngClass]="getDeadlineColorClass(subChild.deadline)">
+                                                            {{ subChild.deadline | date:'shortDate' }}
+                                                        </span>
+                                                        <span [ngClass]="getGoalStatusColorClass(subChild)">
+                                                            {{ getGoalStatus(subChild) }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

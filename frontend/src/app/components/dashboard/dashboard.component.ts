@@ -1,6 +1,11 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
+  DragDropModule,
+  CdkDragDrop,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
+import {
   GoalsService,
   GoalsResponse,
   GoalResponse,
@@ -19,7 +24,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DragDropModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
@@ -732,5 +737,71 @@ export class DashboardComponent implements OnInit {
 
     // Otherwise, it's a sub-child
     return 2;
+  }
+
+  /**
+   * Get deadline color class based on deadline date
+   */
+  getDeadlineColorClass(deadline: string): string {
+    const deadlineDate = new Date(deadline);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    deadlineDate.setHours(0, 0, 0, 0);
+
+    const diffTime = deadlineDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return 'text-red-600 font-semibold'; // Past deadline
+    } else if (diffDays <= 1) {
+      return 'text-orange-600 font-semibold'; // 1 day or less remaining
+    } else {
+      return 'text-green-600'; // Future deadline
+    }
+  }
+
+  /**
+   * Get goal status text - simplified to just Completed or In Progress
+   */
+  getGoalStatus(goal: Goal): string {
+    return goal.completed ? 'Completed' : 'In Progress';
+  }
+
+  /**
+   * Get goal status color class
+   */
+  getGoalStatusColorClass(goal: Goal): string {
+    return goal.completed ? 'text-green-600 font-semibold' : 'text-blue-600';
+  }
+
+  /**
+   * Handle drag and drop reordering of goals
+   */
+  onGoalDrop(event: CdkDragDrop<Goal[]>, parentId?: string): void {
+    if (event.previousIndex === event.currentIndex) {
+      return; // No change needed
+    }
+
+    const goalList = parentId ? this.childrenGoals[parentId] : this.goals;
+    const movedGoal = goalList[event.previousIndex];
+
+    // Update local array first for immediate UI feedback
+    moveItemInArray(goalList, event.previousIndex, event.currentIndex);
+
+    // Send reorder request to backend
+    const newOrder = event.currentIndex;
+    this.goalsService.reorderGoal(movedGoal.id, newOrder).subscribe({
+      next: (response: GoalResponse) => {
+        console.log('Goal reordered successfully:', response);
+        // Optionally refresh the goals to get updated order from backend
+        this.loadGoals(this.currentPage);
+      },
+      error: (error: any) => {
+        console.error('Error reordering goal:', error);
+        // Revert the local change on error
+        moveItemInArray(goalList, event.currentIndex, event.previousIndex);
+        this.error = 'Failed to reorder goal. Please try again.';
+      },
+    });
   }
 }

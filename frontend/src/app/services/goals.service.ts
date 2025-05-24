@@ -76,7 +76,7 @@ export class GoalsService {
 
   // Update an existing goal
   updateGoal(id: string, goal: UpdateGoalDto): Observable<GoalResponse> {
-    return this.http.patch<GoalResponse>(`${this.apiUrl}/${id}`, goal).pipe(
+    return this.http.put<GoalResponse>(`${this.apiUrl}/${id}`, goal).pipe(
       catchError((error) => {
         console.error(`Error updating goal ${id}:`, error);
         return throwError(() => error);
@@ -95,12 +95,11 @@ export class GoalsService {
         })
       );
   }
-
   // Reorder a goal
   reorderGoal(id: string, newOrder: number): Observable<GoalResponse> {
     const reorderDto: ReorderGoalDto = { newOrder };
     return this.http
-      .patch<GoalResponse>(`${this.apiUrl}/${id}/reorder`, reorderDto)
+      .put<GoalResponse>(`${this.apiUrl}/${id}/reorder`, reorderDto)
       .pipe(
         catchError((error) => {
           console.error(`Error reordering goal ${id}:`, error);
