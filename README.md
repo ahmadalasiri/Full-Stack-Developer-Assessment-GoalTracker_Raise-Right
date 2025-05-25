@@ -6,7 +6,7 @@ A modern goal management application with hierarchical structure built for the R
 
 - **GitHub**: [https://github.com/ahmadalasiri/Full-Stack-Developer-Assessment-GoalTracker_Raise-Right](https://github.com/ahmadalasiri/Full-Stack-Developer-Assessment-GoalTracker_Raise-Right)
 - **Live Demo**: [https://goal-tracker.ahmadalasiri.info](https://goal-tracker.ahmadalasiri.info)
-- **API**: [http://api.goal-tracker.ahmadalasiri.info/api](http://api.goal-tracker.ahmadalasiri.info/api)
+- **API Documentation (Swagger)**: [http://api.goal-tracker.ahmadalasiri.info/api/docs](http://api.goal-tracker.ahmadalasiri.info/api/docs)
 
 ![Tech Stack](https://img.shields.io/badge/Stack-Angular%2019%20%7C%20NestJS%2011%20%7C%20PostgreSQL%2015-blue)
 

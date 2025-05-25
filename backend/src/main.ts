@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as morgan from 'morgan';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
@@ -42,7 +43,6 @@ async function bootstrap() {
 
   // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
-
   // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
@@ -55,11 +55,41 @@ async function bootstrap() {
   // API prefix
   app.setGlobalPrefix('api');
 
+  // Swagger Documentation Setup
+  const config = new DocumentBuilder()
+    .setTitle('GoalTracker API')
+    .setDescription('Smart Personal & Public Goal Management Tool API')
+    .setVersion('1.0')
+    .addTag('auth', 'Authentication endpoints')
+    .addTag('goals', 'Goals management endpoints')
+    .addTag('public-goals', 'Public goals endpoints')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth', // This name here is important for matching up with @ApiBearerAuth() in your controller!
+    )
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
   const port = configService.get('PORT') || 3001;
   await app.listen(port);
 
   if (process.env.NODE_ENV !== 'production') {
     console.log(`🚀 Application is running on: http://localhost:${port}/api`);
+    console.log(
+      `📚 Swagger documentation available at: http://localhost:${port}/api/docs`,
+    );
   }
 }
 
