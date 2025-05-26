@@ -2,6 +2,10 @@
 
 A modern goal management application with hierarchical structure built for the Raise Right assessment. Create, organize, and track personal goals with up to 3 levels of nesting.
 
+## 🎥 Demo Video
+
+https://github.com/user-attachments/assets/83317050-9070-4bc8-b915-f53b538ceb2d
+
 ## 🔗 Links
 
 - **GitHub**: [https://github.com/ahmadalasiri/Full-Stack-Developer-Assessment-GoalTracker_Raise-Right](https://github.com/ahmadalasiri/Full-Stack-Developer-Assessment-GoalTracker_Raise-Right)
